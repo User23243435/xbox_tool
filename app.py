@@ -4,52 +4,39 @@ import os
 import asyncio
 import random
 
-# Background image URL
-background_url = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80"
+# --- Place this CSS block immediately after your imports ---
+background_url = "https://media.istockphoto.com/id/186849963/photo/sky.jpg?s=612x612&w=0&k=20&c=qQHaTbThki442O54f2CPljWrYuq8QYL3qRJGwvIkCRg="
 
-# Apply background with CSS
 st.markdown(
     f"""
     <style>
-    /* Make the body cover entire page and set background image */
-    body {{
+    /* Style the main container in Streamlit */
+    .stApp {{
         background-image: url("{background_url}");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        color: #fff;
+        width: 100%;
+        position: relative;
     }}
-    /* Optional: overlay for better text readability */
-    body::before {{
+    /* Optional overlay for better contrast/readability */
+    .stApp::before {{
         content: "";
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background-color: rgba(0, 0, 50, 0.4);
+        background-color: rgba(0,0,0,0.2);
         z-index: -1;
     }}
-    /* Style for your header container */
-    .header {{
-        text-align: center;
-        padding: 30px 20px;
-    }}
-    /* Style for buttons */
-    button {{
-        border-radius: 10px;
-        font-weight: bold;
-        padding: 10px 20px;
-        font-size: 16px;
-        margin: 5px;
-    }}
+    /* You can keep your other styles below if needed */
     </style>
     """, unsafe_allow_html=True
 )
 
-# Your existing header
+# Your existing code continues here...
+
+# Existing header
 st.markdown(
     """
     <div class="header">
@@ -194,7 +181,7 @@ def main():
             asyncio.run(report_spammer(gamertag, report_message, int(count)))
             st.success("Reports sent!")
 
-    # Logout button
+    # Logout
     if st.button("🔓 Logout"):
         st.session_state['logged_in'] = False
         st.session_state['user'] = ""
