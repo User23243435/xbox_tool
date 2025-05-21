@@ -7,6 +7,9 @@ import random
 # Background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
+# Image URL to replace ASCII art
+header_image_url = "https://see.fontimg.com/api/rf5/1GyyM/NzI4MWVlYTljMmQ0NGViM2IyOTc1MmIzNWE2ODYwNzYub3Rm/WEJPWCBUT09M/milkywaypersonaluse-bold.png?r=dw&h=65&w=1000&fg=000000&bg=FFFFFF&s=65"
+
 # Apply background CSS
 st.markdown(
     f"""
@@ -33,16 +36,10 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Your ASCII art header
+# Embed header image
 st.markdown(
-    """
-    <pre style="font-family: monospace; font-size: 10px; line-height: 1; color: #00ffff;">
-XX    XX BBBBB    OOOOO  XX    XX    TTTTTTT  OOOOO   OOOOO  LL      
-XX  XX  BB   B  OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
-  XXXX   BBBBBB  OO   OO   XXXX        TTT   OO   OO OO   OO LL      
-XX  XX  BB   BB OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
-XX    XX BBBBBB   OOOO0  XX    XX      TTT    OOOO0   OOOO0  LLLLLLL
-    </pre>
+    f"""
+    <img src="{header_image_url}" style="width: 100%; max-width: 1000px; height: 65px; object-fit: contain; display: block; margin: 0 auto;"/>
     """, unsafe_allow_html=True
 )
 
@@ -147,18 +144,9 @@ def main():
             register()
         return
 
-    # Small, clear header
-    st.markdown(
-        """
-        <pre style="font-family: monospace; font-size: 10px; color: #00ffff;">
-XX    XX BBBBB    OOOOO  XX    XX    TTTTTTT  OOOOO   OOOOO  LL      
-XX  XX  BB   B  OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
-  XXXX   BBBBBB  OO   OO   XXXX        TTT   OO   OO OO   OO LL      
-XX  XX  BB   BB OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
-XX    XX BBBBBB   OOOO0  XX    XX      TTT    OOOO0   OOOO0  LLLLLLL
-        </pre>
-        """, unsafe_allow_html=True
-    )
+    # Optional: a small header or message
+    # (You can remove or replace this if you want)
+    # Small header already included above as image.
 
     # Your main interface
     col1, col2 = st.columns(2)
