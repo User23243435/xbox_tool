@@ -4,9 +4,10 @@ import os
 import asyncio
 import random
 
-# --- Place this CSS block immediately after your imports ---
-background_url = "https://media.istockphoto.com/id/186849963/photo/sky.jpg?s=612x612&w=0&k=20&c=qQHaTbThki442O54f2CPljWrYuq8QYL3qRJGwvIkCRg="
+# Set your new background image URL
+background_url = "https://images.fineartamerica.com/images/artworkimages/mediumlarge/2/fluffy-clouds--blue-sky-panorama-turnervisual.jpg"
 
+# Apply background with CSS targeting .stApp
 st.markdown(
     f"""
     <style>
@@ -26,17 +27,15 @@ st.markdown(
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.2);
+        background-color: rgba(0,0,0,0.2); /* dark overlay for contrast */
         z-index: -1;
     }}
-    /* You can keep your other styles below if needed */
+    /* Keep existing styles or add more here if needed */
     </style>
     """, unsafe_allow_html=True
 )
 
-# Your existing code continues here...
-
-# Existing header
+# Your existing header
 st.markdown(
     """
     <div class="header">
