@@ -13,7 +13,7 @@ st.markdown(
     header {display: none !important;}
     /* Hide the main menu (hamburger icon) */
     #MainMenu {visibility: hidden;}
-    /* Hide the footer */
+    /* Hide the footer (including "Hosted by Streamlit") */
     footer {visibility: hidden;}
     /* Hide help sidebar if present */
     div[data-testid="stHelpSidebar"] {display: none;}
@@ -130,7 +130,7 @@ def login():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Dummy async functions
+# Async functions for simulating API calls
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
     return "1234567890"
