@@ -9,13 +9,13 @@ st.set_page_config(page_title="Xbox Tool", layout="centered")
 st.markdown(
     """
     <style>
+    /* Hide entire top header bar (Share, Fork, Help, About) */
+    header {display: none !important;}
     /* Hide the main menu (hamburger icon) */
     #MainMenu {visibility: hidden;}
     /* Hide the footer */
     footer {visibility: hidden;}
-    /* Hide the top header bar with Share and Star icons */
-    header {display: none;}
-    /* Optional: hide help sidebar if present */
+    /* Hide help sidebar if present */
     div[data-testid="stHelpSidebar"] {display: none;}
     </style>
     """,
