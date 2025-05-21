@@ -36,7 +36,7 @@ st.markdown(
 # Insert your new small ASCII header
 st.markdown(
     """
-    <pre style="font-family: monospace; font-size: 8px; line-height: 1; color: #00ffff;">
+    <pre style="font-family: monospace; font-size: 5px; line-height: 1; color: #00ffff;">
    _  _____  ____  _  __  __________  ____  __ 
   | |/_/ _ )/ __ \| |/_/ /_  __/ __ \/ __ \/ / 
  _>  </ _  / /_/ _>  <    / / / /_/ / /_/ / /__
