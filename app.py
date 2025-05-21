@@ -19,24 +19,25 @@ st.markdown(
         min-height: 100vh;
         width: 100%;
         position: relative;
+        color: #fff; /* Optional: text color for contrast */
     }}
-    /* Optional overlay for better contrast/readability */
+    /* Overlay for contrast */
     .stApp::before {{
         content: "";
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.2);
+        background-color: rgba(0,0,0,0.3);
         z-index: -1;
     }}
     </style>
     """, unsafe_allow_html=True
 )
 
-# Replace header with ASCII art
+# ASCII art header with smaller size
 st.markdown(
     """
-    <pre style="font-family: monospace; font-size: 14px; color: #ffcc00;">
+    <pre style="font-family: monospace; font-size: 10px; color: #00ffff;">
 /$$   /$$ /$$$$$$$   /$$$$$$  /$$   /$$       /$$$$$$$$ /$$$$$$   /$$$$$$  /$$      
 | $$  / $$| $$__  $$ /$$__  $$| $$  / $$      |__  $$__//$$__  $$ /$$__  $$| $$      
 |  $$/ $$/| $$  \ $$| $$  \ $$|  $$/ $$/         | $$  | $$  \ $$| $$  \ $$| $$      
@@ -70,7 +71,7 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-# Registration function
+# Registration
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -97,7 +98,7 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Login function
+# Login
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
@@ -121,7 +122,7 @@ def login():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Dummy async functions for Xbox API
+# Async functions for Xbox API
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
     return "1234567890"
@@ -140,7 +141,7 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# Main app logic
+# Main
 def main():
     if not st.session_state['logged_in']:
         choice = st.radio("Create account or login:", ["Login", "Register"])
@@ -150,10 +151,10 @@ def main():
             register()
         return
 
-    # Welcome banner with ASCII art
+    # ASCII header (smaller)
     st.markdown(
         """
-        <pre style="font-family: monospace; font-size: 14px; color: #ffcc00;">
+        <pre style="font-family: monospace; font-size: 10px; color: #00ffff;">
 /$$   /$$ /$$$$$$$   /$$$$$$  /$$   /$$       /$$$$$$$$ /$$$$$$   /$$$$$$  /$$      
 | $$  / $$| $$__  $$ /$$__  $$| $$  / $$      |__  $$__//$$__  $$ /$$__  $$| $$      
 |  $$/ $$/| $$  \ $$| $$  \ $$|  $$/ $$/         | $$  | $$  \ $$| $$  \ $$| $$      
@@ -166,22 +167,20 @@ def main():
         """, unsafe_allow_html=True
     )
 
-    # Load or initialize users
+    # Load users
     if os.path.exists("users.json"):
         with open("users.json", "r") as f:
+            global users
             users = json.load(f)
     else:
         users = {}
 
-    # Layout for main functionality
     col1, col2 = st.columns(2)
-
     with col1:
         if st.button("🛡️ Ban XUID"):
             xuid = st.text_input("Enter XUID to ban")
             if st.button("✅ Confirm Ban"):
                 st.success(f"XUID {xuid} banned!")
-
     with col2:
         if st.button("📩 Spam Messages"):
             gamertag = st.text_input("Gamertag to spam")
@@ -199,7 +198,6 @@ def main():
             asyncio.run(report_spammer(gamertag, report_message, int(count)))
             st.success("Reports sent!")
 
-    # Logout button
     if st.button("🔓 Logout"):
         st.session_state['logged_in'] = False
         st.session_state['user'] = ""
