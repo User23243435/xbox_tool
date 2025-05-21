@@ -7,8 +7,8 @@ import random
 # Background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
-# Your header image URL (no bg parameter for transparency)
-header_image_url = "https://see.fontimg.com/api/rf5/L37M5/NDRlYzhmZWJmOGU5NDU5ZGJmMDU5NGRmNzIzZTE0ZjAudHRm/WEJPWCBUT09M/fluid-bold.png?r=fs&h=150&width=1500&fg=000000"
+# Your transparent "XBOX TOOL" header image URL
+header_image_url = "https://your-image-host.com/path-to-your-transparent-xbox-tool.png"  # <-- replace this with your actual URL
 
 # Apply background CSS
 st.markdown(
@@ -36,12 +36,14 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Show the header image prominently and centered
+# Display your transparent "XBOX TOOL" image
 st.markdown(
     f"""
-    <img src="{header_image_url}" style="width: 100%; max-width: 1500px; height: auto; object-fit: contain; display: block; margin: 20px auto; background: transparent;"/>
+    <img src="{header_image_url}" style="width: 100%; max-width: 700px; height: auto; display: block; margin: 20px auto; background: transparent;"/>
     """, unsafe_allow_html=True
 )
+
+# Your existing code below...
 
 # Load or initialize users data
 if os.path.exists("users.json"):
@@ -134,7 +136,7 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# Main
+# Main app
 def main():
     if not st.session_state['logged_in']:
         choice = st.radio("Create account or login:", ["Login", "Register"])
@@ -144,7 +146,7 @@ def main():
             register()
         return
 
-    # Main interface with large, visible header image
+    # Main interface
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🛡️ Ban XUID"):
