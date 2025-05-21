@@ -7,7 +7,7 @@ import random
 # Background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
-# Image URL to replace ASCII art
+# Header image URL
 header_image_url = "https://see.fontimg.com/api/rf5/1GyyM/NzI4MWVlYTljMmQ0NGViM2IyOTc1MmIzNWE2ODYwNzYub3Rm/WEJPWCBUT09M/milkywaypersonaluse-bold.png?r=dw&h=65&w=1000&fg=000000&bg=FFFFFF&s=65"
 
 # Apply background CSS
@@ -36,10 +36,10 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Embed header image
+# Embed larger header image with transparent background
 st.markdown(
     f"""
-    <img src="{header_image_url}" style="width: 100%; max-width: 1000px; height: 65px; object-fit: contain; display: block; margin: 0 auto;"/>
+    <img src="{header_image_url}" style="width: 100%; max-width: 1500px; height: auto; object-fit: contain; display: block; margin: 0 auto; background: transparent;"/>
     """, unsafe_allow_html=True
 )
 
@@ -144,10 +144,7 @@ def main():
             register()
         return
 
-    # Optional: a small header or message
-    # (You can remove or replace this if you want)
-    # Small header already included above as image.
-
+    # Optional: a small header or message (already replaced with image)
     # Your main interface
     col1, col2 = st.columns(2)
     with col1:
