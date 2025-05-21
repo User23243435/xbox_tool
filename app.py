@@ -7,8 +7,8 @@ import random
 # Background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
-# Header image URL
-header_image_url = "https://see.fontimg.com/api/rf5/1GyyM/NzI4MWVlYTljMmQ0NGViM2IyOTc1MmIzNWE2ODYwNzYub3Rm/WEJPWCBUT09M/milkywaypersonaluse-bold.png?r=dw&h=65&w=1000&fg=000000&bg=FFFFFF&s=65"
+# Header image URL with transparent background
+header_image_url = "https://see.fontimg.com/api/rf5/L37M5/NDRlYzhmZWJmOGU5NDU5ZGJmMDU5NGRmNzIzZTE0ZjAudHRm/WEJPWCBUT09M/fluid-bold.png?r=fs&h=65&w=1000&fg=000000&tb=1&s=65"
 
 # Apply background CSS
 st.markdown(
@@ -36,7 +36,7 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Embed larger header image with transparent background
+# Embed the larger transparent header image
 st.markdown(
     f"""
     <img src="{header_image_url}" style="width: 100%; max-width: 1500px; height: auto; object-fit: contain; display: block; margin: 0 auto; background: transparent;"/>
@@ -144,8 +144,7 @@ def main():
             register()
         return
 
-    # Optional: a small header or message (already replaced with image)
-    # Your main interface
+    # Main interface with scaled-up header image
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🛡️ Ban XUID"):
