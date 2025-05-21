@@ -19,7 +19,7 @@ st.markdown(
         min-height: 100vh;
         width: 100%;
         position: relative;
-        color: #fff; /* Optional: text color for contrast */
+        color: #fff;
     }}
     /* Overlay for contrast */
     .stApp::before {{
@@ -34,10 +34,10 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# ASCII art header with smaller size
+# Insert ASCII art header with smaller size
 st.markdown(
     """
-    <pre style="font-family: monospace; font-size: 10px; color: #00ffff;">
+    <pre style="font-family: monospace; font-size: 10px; line-height: 1.2; color: #00ffff;">
 /$$   /$$ /$$$$$$$   /$$$$$$  /$$   /$$       /$$$$$$$$ /$$$$$$   /$$$$$$  /$$      
 | $$  / $$| $$__  $$ /$$__  $$| $$  / $$      |__  $$__//$$__  $$ /$$__  $$| $$      
 |  $$/ $$/| $$  \ $$| $$  \ $$|  $$/ $$/         | $$  | $$  \ $$| $$  \ $$| $$      
@@ -71,7 +71,7 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-# Registration
+# Registration function
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -98,7 +98,7 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Login
+# Login function
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
@@ -122,7 +122,7 @@ def login():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Async functions for Xbox API
+# Dummy async functions for Xbox API
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
     return "1234567890"
@@ -141,7 +141,7 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# Main
+# Main app
 def main():
     if not st.session_state['logged_in']:
         choice = st.radio("Create account or login:", ["Login", "Register"])
@@ -151,10 +151,10 @@ def main():
             register()
         return
 
-    # ASCII header (smaller)
+    # ASCII art header (smaller)
     st.markdown(
         """
-        <pre style="font-family: monospace; font-size: 10px; color: #00ffff;">
+        <pre style="font-family: monospace; font-size: 10px; line-height: 1.2; color: #00ffff;">
 /$$   /$$ /$$$$$$$   /$$$$$$  /$$   /$$       /$$$$$$$$ /$$$$$$   /$$$$$$  /$$      
 | $$  / $$| $$__  $$ /$$__  $$| $$  / $$      |__  $$__//$$__  $$ /$$__  $$| $$      
 |  $$/ $$/| $$  \ $$| $$  \ $$|  $$/ $$/         | $$  | $$  \ $$| $$  \ $$| $$      
@@ -167,14 +167,7 @@ def main():
         """, unsafe_allow_html=True
     )
 
-    # Load users
-    if os.path.exists("users.json"):
-        with open("users.json", "r") as f:
-            global users
-            users = json.load(f)
-    else:
-        users = {}
-
+    # Your main functionality here
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🛡️ Ban XUID"):
@@ -202,6 +195,7 @@ def main():
         st.session_state['logged_in'] = False
         st.session_state['user'] = ""
         st.experimental_rerun()
+
 
 if __name__ == "__main__":
     main()
