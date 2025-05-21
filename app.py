@@ -3,14 +3,20 @@ import json
 import os
 import asyncio
 import random
+import base64
+
+# --- Embed your local header image as base64 ---
+image_path = "C:/Users/Faded/Downloads/imageedit_13_7704796149.png"
+with open(image_path, "rb") as image_file:
+    encoded_string = base64.b64encode(image_file.read()).decode()
+
+# Generate the HTML for the image
+header_html = f'<img src="data:image/png;base64,{encoded_string}" style="width: 100%; max-width: 700px; height: auto; display: block; margin: 20px auto;">'
 
 # Background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
-# Your transparent "XBOX TOOL" header image URL
-header_image_url = "https://your-image-host.com/path-to-your-transparent-xbox-tool.png"  # <-- replace this with your actual URL
-
-# Apply background CSS
+# --- Apply background CSS ---
 st.markdown(
     f"""
     <style>
@@ -36,16 +42,10 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Display your transparent "XBOX TOOL" image
-st.markdown(
-    f"""
-    <img src="{header_image_url}" style="width: 100%; max-width: 700px; height: auto; display: block; margin: 20px auto; background: transparent;"/>
-    """, unsafe_allow_html=True
-)
+# --- Show your "XBOX TOOL" header (words only, transparent background) ---
+st.markdown(header_html, unsafe_allow_html=True)
 
-# Your existing code below...
-
-# Load or initialize users data
+# --- Load or initialize users data ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -66,7 +66,7 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-# Registration
+# Registration function
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -93,7 +93,7 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Login
+# Login function
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
