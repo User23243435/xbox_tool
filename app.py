@@ -4,14 +4,13 @@ import os
 import asyncio
 import random
 
-# Set your new background image URL
+# Set your background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
-# Apply background with CSS targeting .stApp
+# Apply background CSS targeting .stApp
 st.markdown(
     f"""
     <style>
-    /* Style the main container in Streamlit */
     .stApp {{
         background-image: url("{background_url}");
         background-size: cover;
@@ -27,24 +26,30 @@ st.markdown(
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.2); /* dark overlay for contrast */
+        background-color: rgba(0,0,0,0.2);
         z-index: -1;
     }}
-    /* Keep your other styles below if needed */
     </style>
     """, unsafe_allow_html=True
 )
 
-# Your existing header
+# Replace header with ASCII art
 st.markdown(
     """
-    <div class="header">
-        <h1 style='font-size:60px; color:#ffcc00;'>🚀 <b>XBOX TOOL</b> 🚀</h1>
-    </div>
+    <pre style="font-family: monospace; font-size: 14px; color: #ffcc00;">
+/$$   /$$ /$$$$$$$   /$$$$$$  /$$   /$$       /$$$$$$$$ /$$$$$$   /$$$$$$  /$$      
+| $$  / $$| $$__  $$ /$$__  $$| $$  / $$      |__  $$__//$$__  $$ /$$__  $$| $$      
+|  $$/ $$/| $$  \ $$| $$  \ $$|  $$/ $$/         | $$  | $$  \ $$| $$  \ $$| $$      
+ \  $$$$/ | $$$$$$$ | $$  | $$ \  $$$$/          | $$  | $$  | $$| $$  | $$| $$      
+  >$$  $$ | $$__  $$| $$  | $$  >$$  $$          | $$  | $$  | $$| $$  | $$| $$      
+ /$$/\  $$| $$  \ $$| $$  | $$ /$$/\  $$         | $$  | $$  | $$| $$  | $$| $$      
+| $$  \ $$| $$$$$$$/|  $$$$$$/| $$  \ $$         | $$  |  $$$$$$/|  $$$$$$/| $$$$$$$$
+|__/  |__/|_______/  \______/ |__/  |__/         |__/   \______/  \______/ |________/
+    </pre>
     """, unsafe_allow_html=True
 )
 
-# Load users
+# Load or initialize users data
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -65,7 +70,7 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-# Register function
+# Registration function
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -116,7 +121,7 @@ def login():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Dummy async Xbox API functions
+# Dummy async functions for Xbox API
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
     return "1234567890"
@@ -145,16 +150,30 @@ def main():
             register()
         return
 
-    # Show main app after login
+    # Welcome banner with ASCII art
     st.markdown(
         """
-        <div style='text-align: center; padding: 15px; background: linear-gradient(135deg, #00f, #0ff); border-radius: 10px;'>
-            <h2 style='color:#fff;'>🚀 Welcome to Xbox Tools 🚀</h2>
-        </div>
+        <pre style="font-family: monospace; font-size: 14px; color: #ffcc00;">
+/$$   /$$ /$$$$$$$   /$$$$$$  /$$   /$$       /$$$$$$$$ /$$$$$$   /$$$$$$  /$$      
+| $$  / $$| $$__  $$ /$$__  $$| $$  / $$      |__  $$__//$$__  $$ /$$__  $$| $$      
+|  $$/ $$/| $$  \ $$| $$  \ $$|  $$/ $$/         | $$  | $$  \ $$| $$  \ $$| $$      
+ \  $$$$/ | $$$$$$$ | $$  | $$ \  $$$$/          | $$  | $$  | $$| $$  | $$| $$      
+  >$$  $$ | $$__  $$| $$  | $$  >$$  $$          | $$  | $$  | $$| $$  | $$| $$      
+ /$$/\  $$| $$  \ $$| $$  | $$ /$$/\  $$         | $$  | $$  | $$| $$  | $$| $$      
+| $$  \ $$| $$$$$$$/|  $$$$$$/| $$  \ $$         | $$  |  $$$$$$/|  $$$$$$/| $$$$$$$$
+|__/  |__/|_______/  \______/ |__/  |__/         |__/   \______/  \______/ |________/
+        </pre>
         """, unsafe_allow_html=True
     )
 
-    # Buttons and tools
+    # Load or initialize users
+    if os.path.exists("users.json"):
+        with open("users.json", "r") as f:
+            users = json.load(f)
+    else:
+        users = {}
+
+    # Layout for main functionality
     col1, col2 = st.columns(2)
 
     with col1:
@@ -180,7 +199,7 @@ def main():
             asyncio.run(report_spammer(gamertag, report_message, int(count)))
             st.success("Reports sent!")
 
-    # Logout
+    # Logout button
     if st.button("🔓 Logout"):
         st.session_state['logged_in'] = False
         st.session_state['user'] = ""
