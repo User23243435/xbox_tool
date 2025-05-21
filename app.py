@@ -9,7 +9,7 @@ st.set_page_config(page_title="Xbox Tool", layout="centered")
 st.markdown(
     """
     <style>
-    /* Hide entire top header bar (Share, Fork, Help, About) */
+    /* Hide entire top header bar (Share, Fork, Manage App, Help, About) */
     header {display: none !important;}
     /* Hide the main menu (hamburger icon) */
     #MainMenu {visibility: hidden;}
@@ -22,8 +22,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Embed your header image as a smaller header ---
-header_image_url = "https://i.imgur.com/zs0BkQf.png"
+# --- Embed your new header image as a smaller header ---
+header_image_url = "https://i.imgur.com/WhRBcgw.png"
 
 # --- Apply background CSS ---
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
