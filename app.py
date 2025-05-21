@@ -4,13 +4,22 @@ import os
 import asyncio
 import random
 
-# Background image URL
-background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
+# --- Hide default Streamlit menu, header, footer ---
+st.set_page_config(page_title="Xbox Tool", layout="centered")
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {display: none;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# Your header image URL
+# --- Embed your header image as base64 ---
 header_image_url = "https://i.imgur.com/zs0BkQf.png"
 
 # --- Apply background CSS ---
+background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 st.markdown(
     f"""
     <style>
@@ -36,9 +45,9 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# --- Show your "XBOX TOOL" header (words only) ---
+# --- Show your smaller "XBOX TOOL" header (words only) ---
 st.markdown(
-    f'<img src="{header_image_url}" style="width: 100%; max-width: 700px; height: auto; display: block; margin: 20px auto;">',
+    f'<img src="{header_image_url}" style="width: 50%; max-width: 350px; height: auto; display: block; margin: 10px auto;">',
     unsafe_allow_html=True
 )
 
@@ -63,7 +72,7 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-# Registration function
+# Registration
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -90,7 +99,7 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Login function
+# Login
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
