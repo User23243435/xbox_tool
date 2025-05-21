@@ -4,18 +4,25 @@ import os
 import asyncio
 import random
 
-# --- Hide default Streamlit menu, header, footer ---
+# --- Hide Streamlit default menu, header, footer, and top icons ---
 st.set_page_config(page_title="Xbox Tool", layout="centered")
-hide_streamlit_style = """
+st.markdown(
+    """
     <style>
+    /* Hide the main menu (hamburger icon) */
     #MainMenu {visibility: hidden;}
+    /* Hide the footer */
     footer {visibility: hidden;}
+    /* Hide the top header bar with Share and Star icons */
     header {display: none;}
+    /* Optional: hide help sidebar if present */
+    div[data-testid="stHelpSidebar"] {display: none;}
     </style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# --- Embed your header image as base64 ---
+# --- Embed your header image as a smaller header ---
 header_image_url = "https://i.imgur.com/zs0BkQf.png"
 
 # --- Apply background CSS ---
