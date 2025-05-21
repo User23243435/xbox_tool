@@ -4,7 +4,7 @@ import os
 import asyncio
 import random
 
-# Set your background image URL
+# Background image URL
 background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
 # Apply background CSS
@@ -33,14 +33,15 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Insert your new small ASCII header
+# Your ASCII art header
 st.markdown(
     """
-    <pre style="font-family: monospace; font-size: 5px; line-height: 1; color: #00ffff;">
-   _  _____  ____  _  __  __________  ____  __ 
-  | |/_/ _ )/ __ \| |/_/ /_  __/ __ \/ __ \/ / 
- _>  </ _  / /_/ _>  <    / / / /_/ / /_/ / /__
-/_/|_/____/\____/_/|_|   /_/  \____/\____/____/
+    <pre style="font-family: monospace; font-size: 10px; line-height: 1; color: #00ffff;">
+XX    XX BBBBB    OOOOO  XX    XX    TTTTTTT  OOOOO   OOOOO  LL      
+XX  XX  BB   B  OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
+  XXXX   BBBBBB  OO   OO   XXXX        TTT   OO   OO OO   OO LL      
+XX  XX  BB   BB OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
+XX    XX BBBBBB   OOOO0  XX    XX      TTT    OOOO0   OOOO0  LLLLLLL
     </pre>
     """, unsafe_allow_html=True
 )
@@ -146,14 +147,15 @@ def main():
             register()
         return
 
-    # Smaller ASCII header
+    # Small, clear header
     st.markdown(
         """
-        <pre style="font-family: monospace; font-size: 8px; line-height: 1; color: #00ffff;">
-   _  _____  ____  _  __  __________  ____  __ 
-  | |/_/ _ )/ __ \| |/_/ /_  __/ __ \/ __ \/ / 
- _>  </ _  / /_/ _>  <    / / / /_/ / /_/ / /__
-/_/|_/____/\____/_/|_|   /_/  \____/\____/____/
+        <pre style="font-family: monospace; font-size: 10px; color: #00ffff;">
+XX    XX BBBBB    OOOOO  XX    XX    TTTTTTT  OOOOO   OOOOO  LL      
+XX  XX  BB   B  OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
+  XXXX   BBBBBB  OO   OO   XXXX        TTT   OO   OO OO   OO LL      
+XX  XX  BB   BB OO   OO  XX  XX       TTT   OO   OO OO   OO LL      
+XX    XX BBBBBB   OOOO0  XX    XX      TTT    OOOO0   OOOO0  LLLLLLL
         </pre>
         """, unsafe_allow_html=True
     )
