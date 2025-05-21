@@ -5,7 +5,7 @@ import asyncio
 import random
 
 # Set your new background image URL
-background_url = "https://images.fineartamerica.com/images/artworkimages/mediumlarge/2/fluffy-clouds--blue-sky-panorama-turnervisual.jpg"
+background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
 
 # Apply background with CSS targeting .stApp
 st.markdown(
@@ -30,7 +30,7 @@ st.markdown(
         background-color: rgba(0,0,0,0.2); /* dark overlay for contrast */
         z-index: -1;
     }}
-    /* Keep existing styles or add more here if needed */
+    /* Keep your other styles below if needed */
     </style>
     """, unsafe_allow_html=True
 )
