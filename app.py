@@ -8,7 +8,7 @@ import random
 BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
 HEADER_IMAGE_URL = "https://i.imgur.com/uAQOm2Y.png"
 
-# --------- Function definitions (must come first) ---------
+# --------- Function definitions ---------
 
 def generate_captcha():
     a = random.randint(1, 10)
@@ -122,9 +122,11 @@ def main():
 
     # App content container
     with st.container():
-        # Header with image replacing "XBOX TOOL"
+        # Big header image replacing "XBOX TOOL"
         st.markdown(
-            f'<div style="text-align:center;"><img src="{HEADER_IMAGE_URL}" style="width:300px;"></div>',
+            f'<div style="text-align:center;">'
+            f'<img src="{HEADER_IMAGE_URL}" style="width:600px; max-width:90%; height:auto; border: 5px solid white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
+            f'</div>',
             unsafe_allow_html=True
         )
 
@@ -140,7 +142,7 @@ def main():
             """, unsafe_allow_html=True
         )
 
-        # Authentication check
+        # Authentication
         if not st.session_state['logged_in']:
             choice = st.radio("Create account or login:", ["Login", "Register"])
             if choice == "Login":
