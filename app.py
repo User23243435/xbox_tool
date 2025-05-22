@@ -4,6 +4,14 @@ import json
 import os
 import random
 
+# --------- Set favicon to controller emoji ---------
+st.markdown(
+    """
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 height=%22124%22 width=%22124%22><text y=%22.9em%22 font-size=%22.10000000000000001em%22>🎮</text></svg>">
+    """,
+    unsafe_allow_html=True
+)
+
 # --------- Constants ---------
 BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
 HEADER_IMAGE_URL = "https://i.imgur.com/uAQOm2Y.png"
@@ -109,7 +117,7 @@ def main():
             <style>
             body {
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 22px;
+                font-size: 18px;
                 line-height: 1.6;
                 color: white; /* ensure text contrast */
             }
