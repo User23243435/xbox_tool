@@ -4,106 +4,20 @@ import json
 import os
 import random
 
-# Define your background URL
-BACKGROUND_URL = "https://images.unsplash.com/photo-1506744038136-46273834b3fb"  # or your preferred background image
+# --------- Constants ---------
+BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
 
-# --- Inject background CSS only once ---
-if 'bg_injected' not in st.session_state:
-    st.markdown(
-        f"""
-        <style>
-        /* Full-page background image */
-        .stApp {{
-            background-image: url("{BACKGROUND_URL}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-        }}
-        /* Optional overlay for contrast */
-        /* .overlay {{
-            background-color: rgba(0,0,0,0.3);
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            z-index: -1;
-        }} */
-        </style>
-        """, unsafe_allow_html=True
-    )
-    st.session_state['bg_injected'] = True
+# --------- Function definitions (must come first) ---------
 
-# --- Your header or logo (if any) --- 
-# For example, if you want a header image, include it here
-# st.markdown(your_header_html, unsafe_allow_html=True)
+def generate_captcha():
+    a = random.randint(1, 10)
+    b = random.randint(1, 10)
+    return f"What is {a} + {b}?", a + b
 
-# --- Your app logic ---
-def main():
-    # Load or create users data
-    if os.path.exists("users.json"):
-        with open("users.json", "r") as f:
-            users = json.load(f)
-    else:
-        users = {}
+def save_users():
+    with open("users.json", "w") as f:
+        json.dump(users, f)
 
-    # init session state
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if 'user' not in st.session_state:
-        st.session_state['user'] = ''
-
-    # Authentication flow
-    if not st.session_state['logged_in']:
-        choice = st.radio("Create account or login:", ["Login", "Register"])
-        if choice == "Login":
-            login()
-        else:
-            register()
-        if not st.session_state['logged_in']:
-            return
-
-    # Main menu
-    st.title("Xbox Tool - Main Menu")
-    option = st.radio("Choose an action:", [
-        "Convert Gamertag to XUID",
-        "Ban XUID",
-        "Spam Messages",
-        "Report Spammer",
-        "Logout"
-    ])
-
-    if option == "Convert Gamertag to XUID":
-        gamertag = st.text_input("Enter Gamertag")
-        if st.button("Convert"):
-            xuid = asyncio.run(convert_gamertag_to_xuid(gamertag))
-            st.success(f"XUID: {xuid}")
-
-    elif option == "Ban XUID":
-        xuid = st.text_input("Enter XUID to ban")
-        if st.button("Confirm Ban"):
-            st.success(f"XUID {xuid} banned!")
-
-    elif option == "Spam Messages":
-        gamertag = st.text_input("Gamertag to spam")
-        message = st.text_area("Message")
-        count = st.number_input("Number of messages", min_value=1)
-        if st.button("Start Spam"):
-            asyncio.run(spam_messages(gamertag, message, int(count)))
-            st.success("Spam sent!")
-
-    elif option == "Report Spammer":
-        gamertag = st.text_input("Gamertag to report")
-        report_message = st.text_area("Report message")
-        count = st.number_input("Number of reports", min_value=1)
-        if st.button("Send Reports"):
-            asyncio.run(report_spammer(gamertag, report_message, int(count)))
-            st.success("Reports sent!")
-
-    elif option == "Logout":
-        st.session_state['logged_in'] = False
-        st.session_state['user'] = ""
-        st.experimental_rerun()
-
-# --- Your login and register functions ---
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
@@ -153,7 +67,6 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# --- Your async functions (convert, spam, report) ---
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
     return "1234567890"
@@ -172,6 +85,108 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# --- Run the app ---
+# --------- Main app ---------
+def main():
+    # Load or initialize users
+    global users
+    if os.path.exists("users.json"):
+        with open("users.json", "r") as f:
+            users = json.load(f)
+    else:
+        users = {}
+
+    # Initialize session state
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False
+    if 'user' not in st.session_state:
+        st.session_state['user'] = ''
+
+    # Inject background CSS only once
+    if 'bg_injected' not in st.session_state:
+        st.markdown(
+            f"""
+            <style>
+            /* Full-page background image */
+            .stApp {{
+                background-image: url("{BACKGROUND_URL}");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                min-height: 100vh;
+            }}
+            </style>
+            """, unsafe_allow_html=True
+        )
+        st.session_state['bg_injected'] = True
+
+    # App content
+    with st.container():
+        # Optional header (your logo/text)
+        st.markdown('<h1 style="text-align:center; color:white;">XBOX TOOL</h1>', unsafe_allow_html=True)
+
+        # Hide default Streamlit UI
+        st.markdown(
+            """
+            <style>
+            header {display: none !important;}
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            div[data-testid="stHelpSidebar"] {display: none;}
+            </style>
+            """, unsafe_allow_html=True
+        )
+
+        # Authentication check
+        if not st.session_state['logged_in']:
+            choice = st.radio("Create account or login:", ["Login", "Register"])
+            if choice == "Login":
+                login()
+            else:
+                register()
+            if not st.session_state['logged_in']:
+                return
+
+        # Main menu options
+        st.title("Xbox Tool - Main Menu")
+        option = st.radio("Choose an action:", [
+            "Convert Gamertag to XUID",
+            "Ban XUID",
+            "Spam Messages",
+            "Report Spammer",
+            "Logout"
+        ])
+
+        if option == "Convert Gamertag to XUID":
+            gamertag = st.text_input("Enter Gamertag")
+            if st.button("Convert"):
+                xuid = asyncio.run(convert_gamertag_to_xuid(gamertag))
+                st.success(f"XUID: {xuid}")
+
+        elif option == "Ban XUID":
+            xuid = st.text_input("Enter XUID to ban")
+            if st.button("Confirm Ban"):
+                st.success(f"XUID {xuid} banned!")
+
+        elif option == "Spam Messages":
+            gamertag = st.text_input("Gamertag to spam")
+            message = st.text_area("Message")
+            count = st.number_input("Number of messages", min_value=1)
+            if st.button("Start Spam"):
+                asyncio.run(spam_messages(gamertag, message, int(count)))
+                st.success("Spam sent!")
+
+        elif option == "Report Spammer":
+            gamertag = st.text_input("Gamertag to report")
+            report_message = st.text_area("Report message")
+            count = st.number_input("Number of reports", min_value=1)
+            if st.button("Send Reports"):
+                asyncio.run(report_spammer(gamertag, report_message, int(count)))
+                st.success("Reports sent!")
+
+        elif option == "Logout":
+            st.session_state['logged_in'] = False
+            st.session_state['user'] = ""
+            st.experimental_rerun()
+
 if __name__ == "__main__":
     main()
