@@ -89,7 +89,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Show your smaller "XBOX TOOL" header (words only) ---
+# --- Show your smaller "XBOX TOOL" header ---
 st.markdown(
     f'<img src="{header_image_url}" class="header-img" alt="XBOX TOOL">',
     unsafe_allow_html=True
@@ -102,7 +102,7 @@ if os.path.exists("users.json"):
 else:
     users = {}
 
-# --- Session state for login ---
+# --- Session state ---
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user' not in st.session_state:
@@ -171,6 +171,7 @@ def login():
 # Async functions (simulate API)
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
+    # Here you'd call the real API
     return "1234567890"
 
 async def send_message(xuid, message, number):
@@ -197,31 +198,53 @@ def main():
             register()
         return
 
-    # Main interface
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🛡️ Ban XUID"):
-            xuid = st.text_input("Enter XUID to ban")
-            if st.button("✅ Confirm Ban"):
-                st.success(f"XUID {xuid} banned!")
-    with col2:
-        if st.button("📩 Spam Messages"):
-            gamertag = st.text_input("Gamertag to spam")
-            message = st.text_area("Message")
-            count = st.number_input("Number of messages", min_value=1)
-            if st.button("🚀 Start Spam"):
-                asyncio.run(spam_messages(gamertag, message, int(count)))
-                st.success("Spam sent!")
+    st.title("Xbox Tool - Main Menu")
+    # Add a selection box for options
+    option = st.radio("Choose an action:", [
+        "Convert Gamertag to XUID",
+        "Ban XUID",
+        "Spam Messages",
+        "Report Spammer",
+        "Logout"
+    ])
 
-    if st.button("🚨 Report Spammer"):
+    if option == "Convert Gamertag to XUID":
+        st.subheader("Convert Gamertag to XUID")
+        gamertag = st.text_input("Enter Gamertag")
+        if st.button("Convert"):
+            # Show loading indicator
+            with st.spinner('Converting...'):
+                xuid = asyncio.run(convert_gamertag_to_xuid(gamertag))
+            st.success(f"XUID for {gamertag} is {xuid}")
+
+    elif option == "Ban XUID":
+        st.subheader("Ban XUID")
+        xuid = st.text_input("Enter XUID to ban")
+        if st.button("Confirm Ban"):
+            # Here you would add the ban logic
+            st.success(f"XUID {xuid} banned!")
+
+    elif option == "Spam Messages":
+        st.subheader("Spam Messages")
+        gamertag = st.text_input("Gamertag to spam")
+        message = st.text_area("Message")
+        count = st.number_input("Number of messages", min_value=1)
+        if st.button("Start Spam"):
+            with st.spinner('Spamming...'):
+                asyncio.run(spam_messages(gamertag, message, int(count)))
+            st.success("Spam sent!")
+
+    elif option == "Report Spammer":
+        st.subheader("Report Spammer")
         gamertag = st.text_input("Gamertag to report")
         report_message = st.text_area("Report message")
         count = st.number_input("Number of reports", min_value=1)
-        if st.button("📝 Send Reports"):
-            asyncio.run(report_spammer(gamertag, report_message, int(count)))
+        if st.button("Send Reports"):
+            with st.spinner('Reporting...'):
+                asyncio.run(report_spammer(gamertag, report_message, int(count)))
             st.success("Reports sent!")
 
-    if st.button("🔓 Logout"):
+    elif option == "Logout":
         st.session_state['logged_in'] = False
         st.session_state['user'] = ""
         st.experimental_rerun()
