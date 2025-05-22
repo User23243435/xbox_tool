@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 # Your static background image URL
-background_image_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ7THZtSyLfY9T125zMPyQYiJZkw28vnTS8A&s"
+background_image_url = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
 
 # Your Xbox banner image URL
 banner_image_url = "https://i.imgur.com/u5Lf7fu.png"  # Your provided link
