@@ -46,7 +46,8 @@ st.markdown(
         }
     }
     </style>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
 
 # --- Embed your header image ---
@@ -84,7 +85,8 @@ st.markdown(
         margin: 10px auto;
     }
     </style>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
 
 # --- Show your smaller "XBOX TOOL" header (words only) ---
