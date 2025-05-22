@@ -107,23 +107,30 @@ def generate_captcha():
     return f"What is {a} + {b}?", a + b
 
 # --- API key for gamertag to XUID ---
-API_KEY = "YOUR_API_KEY_HERE"  # <-- Replace with your actual API key
+API_KEY = "YOUR_ACTUAL_API_KEY"  # <-- Replace this with your real API key
 
-# --- Convert gamertag to XUID function ---
+# --- Convert gamertag to XUID with error handling ---
 async def convert_gamertag_to_xuid(gamertag):
-    url = f"https://xbl.io/api/v2/search/{gamertag}"
-    headers = {
-        "accept": "*/*",
-        "x-authorization": API_KEY,
-        "Content-Type": "application/json"
-    }
-    async with aiohttp.ClientSession() as session:
-        resp = await session.get(url, headers=headers)
-        if resp.status != 200:
-            return None
-        data = await resp.json()
-        if "people" in data and len(data["people"]) > 0 and "xuid" in data["people"][0]:
-            return data["people"][0]["xuid"]
+    try:
+        url = f"https://xbl.io/api/v2/search/{gamertag}"
+        headers = {
+            "accept": "*/*",
+            "x-authorization": API_KEY,
+            "Content-Type": "application/json"
+        }
+        async with aiohttp.ClientSession() as session:
+            resp = await session.get(url, headers=headers)
+            if resp.status != 200:
+                st.error(f"API response status: {resp.status}")
+                return None
+            data = await resp.json()
+            if "people" in data and len(data["people"]) > 0 and "xuid" in data["people"][0]:
+                return data["people"][0]["xuid"]
+            else:
+                st.error("Could not find XUID for that gamertag.")
+                return None
+    except Exception as e:
+        st.error(f"Error converting gamertag: {str(e)}")
         return None
 
 # --- Register ---
@@ -195,7 +202,7 @@ def main():
     gamertag_input = st.text_input("Enter Gamertag")
     if st.button("Convert to XUID"):
         if gamertag_input:
-            # Call async function
+            # Call async function with debugging
             xuid = asyncio.run(convert_gamertag_to_xuid(gamertag_input))
             if xuid:
                 st.success(f"XUID: {xuid}")
@@ -239,16 +246,17 @@ def main():
 async def spam_messages(gamertag, message, count):
     xuid = await convert_gamertag_to_xuid(gamertag)
     if not xuid:
+        st.error("Could not convert gamertag to XUID.")
         return
     for _ in range(count):
         await asyncio.sleep(0.1)  # simulate delay
         # Here you'd implement actual message sending logic
-        # For now, just print to console
         print(f"Sent message to XUID {xuid}: {message}")
 
 async def report_spammer(gamertag, message, count):
     xuid = await convert_gamertag_to_xuid(gamertag)
     if not xuid:
+        st.error("Could not convert gamertag to XUID.")
         return
     for _ in range(count):
         await asyncio.sleep(0.1)
