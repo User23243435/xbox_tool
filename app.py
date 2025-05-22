@@ -109,7 +109,7 @@ def main():
             <style>
             body {
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 18px;
+                font-size: 20px;
                 line-height: 1.6;
                 color: white; /* ensure text contrast */
             }
