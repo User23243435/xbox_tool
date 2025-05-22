@@ -102,6 +102,23 @@ def main():
     if 'user' not in st.session_state:
         st.session_state['user'] = ''
 
+    # Inject font style for better readability
+    if 'font_injected' not in st.session_state:
+        st.markdown(
+            """
+            <style>
+            body {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 18px;
+                line-height: 1.6;
+                color: white; /* ensure text contrast */
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        st.session_state['font_injected'] = True
+
     # Inject background CSS only once
     if 'bg_injected' not in st.session_state:
         st.markdown(
@@ -122,10 +139,10 @@ def main():
 
     # App content container
     with st.container():
-        # Big header image replacing "XBOX TOOL"
+        # Big header image (no border, styled)
         st.markdown(
             f'<div style="text-align:center;">'
-            f'<img src="{HEADER_IMAGE_URL}" style="width:600px; max-width:90%; height:auto; border: 5px solid white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
+            f'<img src="{HEADER_IMAGE_URL}" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
             f'</div>',
             unsafe_allow_html=True
         )
