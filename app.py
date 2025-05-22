@@ -7,15 +7,20 @@ import random
 # --- Set page title and icon with streamlit's built-in method ---
 st.set_page_config(
     page_title="Xbox Tool",
-    page_icon="🎮"  # Emoji icon
+    page_icon="🎮"  # Emoji icon for browser tab
 )
 
-# --------- Set favicon explicitly (optional, for browsers that respect it) ---------
-# (Note: This is often overridden by Streamlit's default behavior, but including for completeness)
+# --- Add custom PNG icon for browser tab (favicon) ---
 st.markdown(
     """
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 height=%22124%22 width=%22124%22><text y=%22.9em%22 font-size=%22.10000000000000001em%22>🎮</text></svg>">
+    <link rel="icon" href="https://i.imgur.com/uAQOm2Y.png" />
     """,
+    unsafe_allow_html=True
+)
+
+# --- Add apple-touch-icon for iOS home screen ---
+st.markdown(
+    '<link rel="apple-touch-icon" href="https://i.imgur.com/uAQOm2Y.png" />',
     unsafe_allow_html=True
 )
 
