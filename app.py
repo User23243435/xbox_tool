@@ -4,10 +4,10 @@ import os
 import asyncio
 import random
 
-# --- Hide Streamlit default menu, header, footer, and top icons ---
+# --- Set page config ---
 st.set_page_config(page_title="Xbox Tool", layout="centered")
 
-# --- Embed background video ---
+# --- Embed background video with correct styling ---
 st.write(
     """
     <style>
@@ -22,16 +22,16 @@ st.write(
         height: auto;
         z-index: -1;
         object-fit: cover;
-        opacity: 0.7; /* adjust for transparency if needed */
+        opacity: 0.7;
     }
-    /* Style for overlay content to be above the video */
+    /* Overlay content styles */
     .content {
         position: relative;
         z-index: 1;
         padding: 20px;
-        color: #fff; /* text color for contrast */
+        color: #fff;
     }
-    /* Optional: style for the header image responsiveness */
+    /* Responsive header image styling */
     img.header-img {
         width: 50%;
         max-width: 350px;
@@ -41,7 +41,7 @@ st.write(
     }
     </style>
     <video autoplay loop muted playsinline class="background-video">
-        <source src="https://github.com/User23243435/xbox_tool/raw/refs/heads/main/Anime%20Rain%20Loop%20wallpapers%20(1).mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/dnctrdcuk/video/upload/v1747890083/xwu9dwpagrqlbvhd8dov.mp4" type="video/mp4" />
     </video>
     """,
     unsafe_allow_html=True
@@ -58,41 +58,26 @@ st.markdown(
 st.markdown(
     """
     <style>
-    /* Hide header, menu, footer */
     header {display: none !important;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     div[data-testid="stHelpSidebar"] {display: none;}
-    /* Responsive styles for mobile devices */
     @media (max-width: 768px) {
-        img.header-img {
-            width: 70% !important;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-size: calc(1.2em + 1vw) !important;
-        }
-        .block-container {
-            flex-direction: column !important;
-        }
+        img.header-img { width: 70% !important; }
+        h1, h2, h3, h4, h5, h6 { font-size: calc(1.2em + 1vw) !important; }
+        .block-container { flex-direction: column !important; }
         button, input[type=text], input[type=password], textarea, input[type=number] {
-            width: 100% !important;
-            font-size: 1.2em;
-            padding: 12px;
+            width: 100% !important; font-size: 1.2em; padding: 12px;
         }
-        .css-1d391kg {
-            padding: 10px !important;
-        }
-        img {
-            max-width: 80% !important;
-            height: auto !important;
-        }
+        .css-1d391kg { padding: 10px !important; }
+        img { max-width: 80% !important; height: auto !important; }
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- Load or initialize users data ---
+# --- Load or initialize users ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
