@@ -4,7 +4,7 @@ import json
 import os
 import random
 
-# --------- Set favicon to controller emoji ---------
+# --------- Set webpage icon (favicon) as controller emoji ---------
 st.markdown(
     """
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 height=%22124%22 width=%22124%22><text y=%22.9em%22 font-size=%22.10000000000000001em%22>🎮</text></svg>">
@@ -12,11 +12,45 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --------- Constants ---------
+# --------- Optional: Add manifest for home screen icon ---------
+# Create a minimal manifest pointing to an icon (if you have one)
+# This helps browsers recognize the icon when added to home screen
+st.markdown(
+    """
+    <link rel="manifest" href="manifest.json">
+    """,
+    unsafe_allow_html=True
+)
+
+# --------- Create a minimal manifest.json content dynamically ----------
+# Let's write a minimal manifest dynamically in Streamlit
+# Note: Streamlit doesn't support writing files directly in the script, 
+# so you'd need to serve a static file or host it somewhere.
+# For simplicity, you can host a static manifest.json and link to it.
+# Or, if you want full control, you can embed the manifest as a data URI, but browsers prefer separate files.
+
+# For this example, assume you host a manifest.json at a URL:
+# Example: "https://yourdomain.com/manifest.json"
+# Make sure the manifest.json contains:
+# {
+#   "name": "Xbox Tool",
+#   "short_name": "XboxTool",
+#   "start_url": ".",
+#   "display": "standalone",
+#   "icons": [
+#     {
+#       "src": "https://i.imgur.com/uAQOm2Y.png",
+#       "sizes": "192x192",
+#       "type": "image/png"
+#     }
+#   ]
+# }
+
+# For simplicity, the above code assumes you have such a manifest hosted.
+
+# --------- Rest of your code ---------
 BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
 HEADER_IMAGE_URL = "https://i.imgur.com/uAQOm2Y.png"
-
-# --------- Function definitions ---------
 
 def generate_captcha():
     a = random.randint(1, 10)
