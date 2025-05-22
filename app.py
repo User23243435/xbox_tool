@@ -1,10 +1,10 @@
 import streamlit as st
+import asyncio
 import json
 import os
-import asyncio
 import random
 
-# --- All your functions here ---
+# ==================== Function Definitions ====================
 
 def save_users():
     with open("users.json", "w") as f:
@@ -31,6 +31,7 @@ def login():
             st.session_state['logged_in'] = True
             st.session_state['user'] = username
             st.success(f"✅ Welcome {username}!")
+            # generate new captcha
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
         else:
@@ -82,8 +83,10 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
+# ==================== Main App Function ====================
+
 def main():
-    # Load or initialize users data
+    # Load or initialize users
     global users
     if os.path.exists("users.json"):
         with open("users.json", "r") as f:
@@ -97,16 +100,12 @@ def main():
     if 'user' not in st.session_state:
         st.session_state['user'] = ''
 
-    # Your background image URL
+    # ==================== Background CSS ====================
     background_image_url = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
-    # Your banner image URL
-    banner_image_url = "https://i.imgur.com/u5Lf7fu.png"
-
-    # Inject background CSS
     st.markdown(
         f"""
         <style>
-        /* Full-page background container */
+        /* Fixed full-page background */
         .background-container {{
             position: fixed;
             top: 0;
@@ -119,21 +118,13 @@ def main():
             background-repeat: no-repeat;
             z-index: -1;
         }}
-        /* Optional overlay for contrast */
-        /* .overlay {{
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.3);
-            z-index: -1;
-        }} */
         /* Main content above background */
         .main-content {{
             position: relative;
             z-index: 1;
             padding: 20px;
         }}
-        /* Floating logo style */
+        /* Floating Xbox GIF */
         .floating-logo {{
             position: fixed;
             top: 20px;
@@ -156,20 +147,21 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Wrap app content inside a container
+    # Wrap app content
     with st.container():
-        # Banner image
+        # Banner Image
+        banner_url = "https://i.imgur.com/u5Lf7fu.png"
         st.markdown(
-            f'<img src="{banner_image_url}" style="width:100%; max-width:600px; display:block; margin:auto;">',
+            f'<img src="{banner_url}" style="width:100%; max-width:600px; display:block; margin:auto;">',
             unsafe_allow_html=True
         )
 
-        # Floating Xbox GIF
-        xbox_logo_gif = "https://media.giphy.com/media/3oKIPwoe7Xh7e5Yv4w/giphy.gif"
+        # Xbox GIF
+        xbox_gif_url = "https://media.giphy.com/media/3oKIPwoe7Xh7e5Yv4w/giphy.gif"
         st.markdown(
             f"""
             <div class="floating-logo">
-                <img src="{xbox_logo_gif}" style="width:100%; height:auto;">
+                <img src="{xbox_gif_url}" style="width:100%; height:auto;">
             </div>
             """,
             unsafe_allow_html=True
@@ -195,7 +187,7 @@ def main():
                 login()
             else:
                 register()
-            # Exit if not logged in
+            # If not logged in, stop here
             if not st.session_state.get('logged_in', False):
                 return
 
@@ -248,6 +240,6 @@ def main():
             st.session_state['user'] = ""
             st.experimental_rerun()
 
-# Call main() if script is run directly
+# ==================== Run the app ====================
 if __name__ == "__main__":
     main()
