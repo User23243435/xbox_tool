@@ -6,6 +6,55 @@ import random
 
 # --- Hide Streamlit default menu, header, footer, and top icons ---
 st.set_page_config(page_title="Xbox Tool", layout="centered")
+
+# --- Embed background video ---
+st.write(
+    """
+    <style>
+    /* Full-page background video styling */
+    .background-video {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        min-width: 100%;
+        min-height: 100%;
+        width: auto;
+        height: auto;
+        z-index: -1;
+        object-fit: cover;
+        opacity: 0.7; /* adjust for transparency if needed */
+    }
+    /* Style for overlay content to be above the video */
+    .content {
+        position: relative;
+        z-index: 1;
+        padding: 20px;
+        color: #fff; /* text color for contrast */
+    }
+    /* Optional: style for the header image responsiveness */
+    img.header-img {
+        width: 50%;
+        max-width: 350px;
+        height: auto;
+        display: block;
+        margin: 10px auto;
+    }
+    </style>
+    <video autoplay loop muted playsinline class="background-video">
+        <source src="https://github.com/User23243435/xbox_tool/raw/refs/heads/main/Anime%20Rain%20Loop%20wallpapers%20(1).mp4" type="video/mp4" />
+    </video>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- Your existing header image ---
+header_image_url = "https://i.imgur.com/WhRBcgw.png"
+st.markdown(
+    f'<img src="{header_image_url}" class="header-img" alt="XBOX TOOL">',
+    unsafe_allow_html=True
+)
+
+# --- Hide default Streamlit UI elements ---
 st.markdown(
     """
     <style>
@@ -14,32 +63,25 @@ st.markdown(
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     div[data-testid="stHelpSidebar"] {display: none;}
-
     /* Responsive styles for mobile devices */
     @media (max-width: 768px) {
-        /* Make header image smaller and centered */
         img.header-img {
             width: 70% !important;
         }
-        /* Make main header text larger for readability */
         h1, h2, h3, h4, h5, h6 {
             font-size: calc(1.2em + 1vw) !important;
         }
-        /* Stack columns vertically instead of side by side */
         .block-container {
             flex-direction: column !important;
         }
-        /* Make buttons and inputs full width */
         button, input[type=text], input[type=password], textarea, input[type=number] {
             width: 100% !important;
             font-size: 1.2em;
             padding: 12px;
         }
-        /* Adjust margins/padding for better mobile fit */
         .css-1d391kg {
             padding: 10px !important;
         }
-        /* Make images scale down */
         img {
             max-width: 80% !important;
             height: auto !important;
@@ -47,51 +89,6 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_html=True
-)
-
-# --- Embed your header image ---
-header_image_url = "https://i.imgur.com/WhRBcgw.png"
-
-# --- Apply background CSS ---
-background_url = "https://4kwallpapers.com/images/wallpapers/xbox-logo-black-background-amoled-gradient-5k-1920x1200-3285.png"
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-image: url("{background_url}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        min-height: 100vh;
-        width: 100%;
-        position: relative;
-        color: #fff;
-    }}
-    .stApp::before {{
-        content: "";
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.3);
-        z-index: -1;
-    }}
-    /* Make images with class 'header-img' responsive */
-    img.header-img {{
-        width: 50%;
-        max-width: 350px;
-        height: auto;
-        display: block;
-        margin: 10px auto;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# --- Show your smaller "XBOX TOOL" header ---
-st.markdown(
-    f'<img src="{header_image_url}" class="header-img" alt="XBOX TOOL">',
     unsafe_allow_html=True
 )
 
@@ -171,7 +168,6 @@ def login():
 # Async functions (simulate API)
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
-    # Here you'd call the real API
     return "1234567890"
 
 async def send_message(xuid, message, number):
@@ -199,7 +195,6 @@ def main():
         return
 
     st.title("Xbox Tool - Main Menu")
-    # Add a selection box for options
     option = st.radio("Choose an action:", [
         "Convert Gamertag to XUID",
         "Ban XUID",
