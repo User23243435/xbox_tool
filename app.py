@@ -4,21 +4,13 @@ import json
 import os
 import random
 
-# --- Set page title and icon with streamlit's built-in method ---
+# --- Set page title and icon (must be first!) ---
 st.set_page_config(
     page_title="Xbox Tool",
-    page_icon="🎮"  # Emoji icon for browser tab
+    page_icon="🎮"
 )
 
-# --- Add custom PNG icon for browser tab (favicon) ---
-st.markdown(
-    """
-    <link rel="icon" href="https://i.imgur.com/uAQOm2Y.png" />
-    """,
-    unsafe_allow_html=True
-)
-
-# --- Add apple-touch-icon for iOS home screen ---
+# --- Optional: For iOS, add apple-touch-icon (must be in markdown) ---
 st.markdown(
     '<link rel="apple-touch-icon" href="https://i.imgur.com/uAQOm2Y.png" />',
     unsafe_allow_html=True
@@ -121,29 +113,11 @@ def main():
     if 'user' not in st.session_state:
         st.session_state['user'] = ''
 
-    # Inject font style for better readability
-    if 'font_injected' not in st.session_state:
-        st.markdown(
-            """
-            <style>
-            body {
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 18px;
-                line-height: 1.6;
-                color: white; /* ensure text contrast */
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-        st.session_state['font_injected'] = True
-
-    # Inject background CSS only once
+    # Inject background CSS
     if 'bg_injected' not in st.session_state:
         st.markdown(
             f"""
             <style>
-            /* Full-page background image */
             .stApp {{
                 background-image: url("{BACKGROUND_URL}");
                 background-size: cover;
@@ -156,9 +130,9 @@ def main():
         )
         st.session_state['bg_injected'] = True
 
-    # App content container
+    # Main content
     with st.container():
-        # Big header image
+        # Header image
         st.markdown(
             f'<div style="text-align:center;">'
             f'<img src="{HEADER_IMAGE_URL}" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
