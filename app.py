@@ -4,27 +4,81 @@ import json
 import os
 import random
 
-# --- Set page title and icon (must be first!) ---
+# --- 1. Set page title and icon (must be first!) ---
 st.set_page_config(
     page_title="Xbox Tool",
-    page_icon="🎮"
+    page_icon="🎮"  # Emoji for browser tab icon
 )
 
-# --- Optional: For iOS, add apple-touch-icon (must be in markdown) ---
+# --- 2. Add custom icon for iOS home screen (must be in markdown) ---
 st.markdown(
     '<link rel="apple-touch-icon" href="https://i.imgur.com/uAQOm2Y.png" />',
     unsafe_allow_html=True
 )
 
-# --------- Constants ---------
-BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
-HEADER_IMAGE_URL = "https://i.imgur.com/uAQOm2Y.png"
+# --- 3. Remove default padding/margin to eliminate top white space ---
+st.markdown(
+    """
+    <style>
+    /* Remove margin/padding from body and app container to fix white border on mobile */
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    .stApp {
+        margin-top: 0;
+        padding-top: 0;
+        /* Optional background image covering entire page */
+        background-image: url("https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+    /* Optional: hide scrollbar or other styles */
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# --------- Function definitions ---------
+# --- 4. Your app content ---
+# Header image
+st.markdown(
+    f'<div style="text-align:center;">'
+    f'<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+# Hide default Streamlit menu/footer for cleaner look
+st.markdown(
+    """
+    <style>
+    header {display: none !important;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    div[data-testid="stHelpSidebar"] {display: none;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --------- Your app logic ---------
+# For demo, just a login form (or your existing code)
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+if 'user' not in st.session_state:
+    st.session_state['user'] = ''
+
 def generate_captcha():
     a = random.randint(1, 10)
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
+
+users = {}
+if os.path.exists("users.json"):
+    with open("users.json", "r") as f:
+        users = json.load(f)
 
 def save_users():
     with open("users.json", "w") as f:
@@ -97,112 +151,58 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# --------- Main app ---------
+# --------- Main app logic ---------
 def main():
-    # Load or initialize users
-    global users
-    if os.path.exists("users.json"):
-        with open("users.json", "r") as f:
-            users = json.load(f)
-    else:
-        users = {}
-
-    # Initialize session state
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if 'user' not in st.session_state:
-        st.session_state['user'] = ''
-
-    # Inject background CSS
-    if 'bg_injected' not in st.session_state:
-        st.markdown(
-            f"""
-            <style>
-            .stApp {{
-                background-image: url("{BACKGROUND_URL}");
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                min-height: 100vh;
-            }}
-            </style>
-            """, unsafe_allow_html=True
-        )
-        st.session_state['bg_injected'] = True
-
-    # Main content
-    with st.container():
-        # Header image
-        st.markdown(
-            f'<div style="text-align:center;">'
-            f'<img src="{HEADER_IMAGE_URL}" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-
-        # Hide default Streamlit UI
-        st.markdown(
-            """
-            <style>
-            header {display: none !important;}
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            div[data-testid="stHelpSidebar"] {display: none;}
-            </style>
-            """, unsafe_allow_html=True
-        )
-
-        # Authentication
+    if not st.session_state['logged_in']:
+        choice = st.radio("Create account or login:", ["Login", "Register"])
+        if choice == "Login":
+            login()
+        else:
+            register()
         if not st.session_state['logged_in']:
-            choice = st.radio("Create account or login:", ["Login", "Register"])
-            if choice == "Login":
-                login()
-            else:
-                register()
-            if not st.session_state['logged_in']:
-                return
+            return
 
-        # Main menu options
-        st.title("Xbox Tool - Main Menu")
-        option = st.radio("Choose an action:", [
-            "Convert Gamertag to XUID",
-            "Ban XUID",
-            "Spam Messages",
-            "Report Spammer",
-            "Logout"
-        ])
+    # Example main menu
+    st.title("Xbox Tool")
+    option = st.radio("Choose an action:", [
+        "Convert Gamertag to XUID",
+        "Ban XUID",
+        "Spam Messages",
+        "Report Spammer",
+        "Logout"
+    ])
 
-        if option == "Convert Gamertag to XUID":
-            gamertag = st.text_input("Enter Gamertag")
-            if st.button("Convert"):
-                xuid = asyncio.run(convert_gamertag_to_xuid(gamertag))
-                st.success(f"XUID: {xuid}")
+    if option == "Convert Gamertag to XUID":
+        gamertag = st.text_input("Enter Gamertag")
+        if st.button("Convert"):
+            xuid = asyncio.run(convert_gamertag_to_xuid(gamertag))
+            st.success(f"XUID: {xuid}")
 
-        elif option == "Ban XUID":
-            xuid = st.text_input("Enter XUID to ban")
-            if st.button("Confirm Ban"):
-                st.success(f"XUID {xuid} banned!")
+    elif option == "Ban XUID":
+        xuid = st.text_input("Enter XUID to ban")
+        if st.button("Confirm Ban"):
+            st.success(f"XUID {xuid} banned!")
 
-        elif option == "Spam Messages":
-            gamertag = st.text_input("Gamertag to spam")
-            message = st.text_area("Message")
-            count = st.number_input("Number of messages", min_value=1)
-            if st.button("Start Spam"):
-                asyncio.run(spam_messages(gamertag, message, int(count)))
-                st.success("Spam sent!")
+    elif option == "Spam Messages":
+        gamertag = st.text_input("Gamertag to spam")
+        message = st.text_area("Message")
+        count = st.number_input("Number of messages", min_value=1)
+        if st.button("Start Spam"):
+            asyncio.run(spam_messages(gamertag, message, int(count)))
+            st.success("Spam sent!")
 
-        elif option == "Report Spammer":
-            gamertag = st.text_input("Gamertag to report")
-            report_message = st.text_area("Report message")
-            count = st.number_input("Number of reports", min_value=1)
-            if st.button("Send Reports"):
-                asyncio.run(report_spammer(gamertag, report_message, int(count)))
-                st.success("Reports sent!")
+    elif option == "Report Spammer":
+        gamertag = st.text_input("Gamertag to report")
+        report_message = st.text_area("Report message")
+        count = st.number_input("Number of reports", min_value=1)
+        if st.button("Send Reports"):
+            asyncio.run(report_spammer(gamertag, report_message, int(count)))
+            st.success("Reports sent!")
 
-        elif option == "Logout":
-            st.session_state['logged_in'] = False
-            st.session_state['user'] = ""
-            st.experimental_rerun()
+    elif option == "Logout":
+        st.session_state['logged_in'] = False
+        st.session_state['user'] = ""
+        st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
