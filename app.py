@@ -4,100 +4,44 @@ import os
 import asyncio
 import random
 
-# --- Set page config ---
-st.set_page_config(page_title="Xbox Tool", layout="centered")
-
-# --- Embed background video with correct styling ---
-st.markdown(
-    """
-    <style>
-    /* Make the background video fill the page and stay in the back */
-    .background-video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-    }
-    /* Make sure all content appears above the video */
-    .content {
-        position: relative;
-        z-index: 1;
-        padding: 20px;
-        color: #fff;
-    }
-    /* Style your header image */
-    img.header-img {
-        width: 50%;
-        max-width: 350px;
-        height: auto;
-        display: block;
-        margin: 10px auto;
-        z-index: 1; /* ensure it appears above the video */
-    }
-    </style>
-    <video autoplay loop muted playsinline class="background-video">
-        <source src="https://res.cloudinary.com/dnctrdcuk/video/upload/v1747890083/xwu9dwpagrqlbvhd8dov.mp4" type="video/mp4" />
-    </video>
-    """,
-    unsafe_allow_html=True
+# Set page config with icon
+st.set_page_config(
+    page_title="Xbox Tool",
+    page_icon="🎮",
+    layout="centered"
 )
 
-# --- Your existing header image ---
-header_image_url = "https://i.imgur.com/WhRBcgw.png"
-st.markdown(
-    f'<img src="{header_image_url}" class="header-img" alt="XBOX TOOL">',
-    unsafe_allow_html=True
-)
+# Your static background image URL
+background_image_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ7THZtSyLfY9T125zMPyQYiJZkw28vnTS8A&s"
 
-# --- Hide default Streamlit UI elements ---
-st.markdown(
-    """
-    <style>
-    header {display: none !important;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    div[data-testid="stHelpSidebar"] {display: none;}
-    @media (max-width: 768px) {
-        img.header-img { width: 70% !important; }
-        h1, h2, h3, h4, h5, h6 { font-size: calc(1.2em + 1vw) !important; }
-        .block-container { flex-direction: column !important; }
-        button, input[type=text], input[type=password], textarea, input[type=number] {
-            width: 100% !important; font-size: 1.2em; padding: 12px;
-        }
-        .css-1d391kg { padding: 10px !important; }
-        img { max-width: 80% !important; height: auto !important; }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# Your Xbox banner image URL
+banner_image_url = "https://i.imgur.com/u5Lf7fu.png"  # Your provided link
 
-# --- Load or initialize users ---
-if os.path.exists("users.json"):
-    with open("users.json", "r") as f:
-        users = json.load(f)
-else:
-    users = {}
+# Define login function
+def login():
+    st.subheader("Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type='password')
+    if 'captcha_q' not in st.session_state:
+        q, a = generate_captcha()
+        st.session_state['captcha_q'] = q
+        st.session_state['captcha_a'] = a
+    captcha_input = st.text_input(st.session_state['captcha_q'])
+    if st.button("Login"):
+        if captcha_input != str(st.session_state['captcha_a']):
+            st.error("🛑 Wrong captcha")
+        elif username in users and users[username] == password:
+            st.session_state['logged_in'] = True
+            st.session_state['user'] = username
+            st.success(f"✅ Welcome {username}!")
+            q, a = generate_captcha()
+            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
+        else:
+            st.error("🛑 Wrong username or password")
+            q, a = generate_captcha()
+            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# --- Session state ---
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
-if 'user' not in st.session_state:
-    st.session_state['user'] = ''
-
-def save_users():
-    with open("users.json", "w") as f:
-        json.dump(users, f)
-
-def generate_captcha():
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    return f"What is {a} + {b}?", a + b
-
-# Registration
+# Define register function
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -124,31 +68,16 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Login
-def login():
-    st.subheader("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type='password')
-    if 'captcha_q' not in st.session_state:
-        q, a = generate_captcha()
-        st.session_state['captcha_q'] = q
-        st.session_state['captcha_a'] = a
-    captcha_input = st.text_input(st.session_state['captcha_q'])
-    if st.button("Login"):
-        if captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
-        elif username in users and users[username] == password:
-            st.session_state['logged_in'] = True
-            st.session_state['user'] = username
-            st.success(f"✅ Welcome {username}!")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
-        else:
-            st.error("🛑 Wrong username or password")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
+# Helper functions
+def save_users():
+    with open("users.json", "w") as f:
+        json.dump(users, f)
 
-# Async functions (simulate API)
+def generate_captcha():
+    a = random.randint(1, 10)
+    b = random.randint(1, 10)
+    return f"What is {a} + {b}?", a + b
+
 async def convert_gamertag_to_xuid(gamertag):
     await asyncio.sleep(1)
     return "1234567890"
@@ -167,8 +96,113 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# Main app
+# Main function
 def main():
+    # Load users data
+    global users
+    if os.path.exists("users.json"):
+        with open("users.json", "r") as f:
+            users = json.load(f)
+    else:
+        users = {}
+
+    # Initialize session state
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False
+    if 'user' not in st.session_state:
+        st.session_state['user'] = ''
+
+    # Inject background CSS
+    st.markdown(
+        f"""
+        <style>
+        html, body {{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }}
+        .background-image {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('{background_image_url}');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }}
+        /* Optional overlay for contrast:
+        .overlay {{
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            z-index: -1;
+        }}
+        */
+        .main-content {{
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+        }}
+        </style>
+        <div class="background-image"></div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Floating Xbox logo GIF
+    xbox_logo_gif = "https://media.giphy.com/media/3oKIPwoe7Xh7e5Yv4w/giphy.gif"
+    st.markdown(
+        f"""
+        <div class="floating-logo">
+            <img src="{xbox_logo_gif}" style="width:100%; height:auto;">
+        </div>
+        <style>
+        .floating-logo {{
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.8;
+            animation: float 3s ease-in-out infinite;
+        }}
+        @keyframes float {{
+            0% {{ transform: translateY(0); }}
+            50% {{ transform: translateY(-10px); }}
+            100% {{ transform: translateY(0); }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Display banner image at top
+    st.markdown(
+        f'<img src="{banner_image_url}" style="width:100%; max-width:600px; display:block; margin:auto;">',
+        unsafe_allow_html=True
+    )
+
+    # Hide Streamlit default UI
+    st.markdown(
+        """
+        <style>
+        header {display: none !important;}
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        div[data-testid="stHelpSidebar"] {display: none;}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Authentication flow
     if not st.session_state['logged_in']:
         choice = st.radio("Create account or login:", ["Login", "Register"])
         if choice == "Login":
@@ -177,6 +211,7 @@ def main():
             register()
         return
 
+    # Main menu
     st.title("Xbox Tool - Main Menu")
     option = st.radio("Choose an action:", [
         "Convert Gamertag to XUID",
@@ -198,7 +233,6 @@ def main():
         st.subheader("Ban XUID")
         xuid = st.text_input("Enter XUID to ban")
         if st.button("Confirm Ban"):
-            # Here you'd add the ban logic
             st.success(f"XUID {xuid} banned!")
 
     elif option == "Spam Messages":
