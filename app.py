@@ -77,13 +77,13 @@ st.markdown(
         z-index: -1;
     }}
     /* Make images with class 'header-img' responsive */
-    img.header-img {
+    img.header-img {{
         width: 50%;
         max-width: 350px;
         height: auto;
         display: block;
         margin: 10px auto;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True
