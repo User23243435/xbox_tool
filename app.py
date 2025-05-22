@@ -8,36 +8,34 @@ import random
 st.set_page_config(page_title="Xbox Tool", layout="centered")
 
 # --- Embed background video with correct styling ---
-st.write(
+st.markdown(
     """
     <style>
-    /* Full-page background video styling */
+    /* Make the background video fill the page and stay in the back */
     .background-video {
         position: fixed;
-        right: 0;
-        bottom: 0;
-        min-width: 100%;
-        min-height: 100%;
-        width: auto;
-        height: auto;
-        z-index: -1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        opacity: 0.7;
+        z-index: -1;
     }
-    /* Overlay content styles */
+    /* Make sure all content appears above the video */
     .content {
         position: relative;
         z-index: 1;
         padding: 20px;
         color: #fff;
     }
-    /* Responsive header image styling */
+    /* Style your header image */
     img.header-img {
         width: 50%;
         max-width: 350px;
         height: auto;
         display: block;
         margin: 10px auto;
+        z-index: 1; /* ensure it appears above the video */
     }
     </style>
     <video autoplay loop muted playsinline class="background-video">
