@@ -1,18 +1,22 @@
 import streamlit as st
+import os
+import asyncio
+import json
+import random
 
-# 1. Set page title and icon (emoji for browser tab)
+# 1. Set page title and emoji icon (browser tab)
 st.set_page_config(
     page_title="Xbox Tool",
     page_icon="🎮"
 )
 
-# 2. Add your custom icon for iOS home screen (replace URL with your image)
+# 2. Add your custom icon for iOS (replace with your PNG URL)
 st.markdown(
     '<link rel="apple-touch-icon" href="https://i.imgur.com/sZMG8WG.png" />',
     unsafe_allow_html=True
 )
 
-# 3. Remove default margins/padding to eliminate top white space/border
+# 3. Remove default margins/padding to fix top white border & set background
 st.markdown(
     """
     <style>
@@ -20,18 +24,16 @@ st.markdown(
         margin: 0;
         padding: 0;
     }
-    /* Fix for top white border on mobile devices */
     .stApp {
         margin-top: 0;
         padding-top: 0;
-        /* Background image covering entire page */
         background-image: url("https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         min-height: 100vh;
     }
-    /* Hide Streamlit default menu/footer for cleaner look */
+    /* Hide default menu and footer for a cleaner look */
     header {display: none !important;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -41,7 +43,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 4. App header image
+# 4. Header image
 st.markdown(
     '<div style="text-align:center;">'
     '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
@@ -49,19 +51,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 5. Main app content - example
-st.title("Xbox Tool")
-
-# Simple login/register example (your existing logic can go here)
+# --- Your login/register logic now ---
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user' not in st.session_state:
     st.session_state['user'] = ''
-
-def generate_captcha():
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    return f"What is {a} + {b}?", a + b
 
 # Load users
 if os.path.exists("users.json"):
@@ -74,6 +68,18 @@ def save_users():
     with open("users.json", "w") as f:
         json.dump(users, f)
 
+def generate_captcha():
+    a = random.randint(1, 10)
+    b = random.randint(1, 10)
+    return f"What is {a} + {b}?", a + b
+
+def show_alert(text):
+    # Show text inside an orange box (like error message)
+    st.markdown(
+        f'<div style="background-color:#FFA500; padding:10px; border-radius:5px;">{text}</div>',
+        unsafe_allow_html=True
+    )
+
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
@@ -85,7 +91,7 @@ def login():
     captcha_input = st.text_input(st.session_state['captcha_q'])
     if st.button("Login"):
         if captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
+            show_alert("🛑 Wrong captcha")
         elif username in users and users[username] == password:
             st.session_state['logged_in'] = True
             st.session_state['user'] = username
@@ -93,7 +99,7 @@ def login():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
         else:
-            st.error("🛑 Wrong username or password")
+            show_alert("🛑 Wrong username or password")
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
@@ -109,13 +115,13 @@ def register():
     captcha_input = st.text_input(st.session_state['captcha_q'])
     if st.button("Register"):
         if username in users:
-            st.error("🛑 Username exists")
+            show_alert("🛑 Username exists")
         elif password != confirm:
-            st.error("🛑 Passwords don't match")
+            show_alert("🛑 Passwords don't match")
         elif captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
+            show_alert("🛑 Wrong captcha")
         elif not password:
-            st.error("🛑 Password cannot be empty")
+            show_alert("🛑 Password cannot be empty")
         else:
             users[username] = password
             save_users()
@@ -123,7 +129,7 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Main UI: login/register or main app
+# Main app logic
 if not st.session_state['logged_in']:
     choice = st.radio("Create account or login:", ["Login", "Register"])
     if choice == "Login":
@@ -133,7 +139,7 @@ if not st.session_state['logged_in']:
     if not st.session_state['logged_in']:
         st.stop()
 
-# Example main menu
+# Main menu options
 option = st.radio("Choose an action:", [
     "Convert Gamertag to XUID",
     "Ban XUID",
@@ -145,7 +151,8 @@ option = st.radio("Choose an action:", [
 if option == "Convert Gamertag to XUID":
     gamertag = st.text_input("Enter Gamertag")
     if st.button("Convert"):
-        xuid = asyncio.run(asyncio.sleep(1, result="1234567890"))  # simulate async
+        # Simulate async call
+        xuid = asyncio.run(asyncio.sleep(1, result="1234567890"))
         st.success(f"XUID: {xuid}")
 
 elif option == "Ban XUID":
