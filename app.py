@@ -17,140 +17,48 @@ background_image_url = "https://4kwallpapers.com/images/wallpapers/neon-xbox-log
 # Your Xbox banner image URL
 banner_image_url = "https://i.imgur.com/u5Lf7fu.png"  # Your provided link
 
-# Define login function
-def login():
-    st.subheader("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type='password')
-    if 'captcha_q' not in st.session_state:
-        q, a = generate_captcha()
-        st.session_state['captcha_q'] = q
-        st.session_state['captcha_a'] = a
-    captcha_input = st.text_input(st.session_state['captcha_q'])
-    if st.button("Login"):
-        if captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
-        elif username in users and users[username] == password:
-            st.session_state['logged_in'] = True
-            st.session_state['user'] = username
-            st.success(f"✅ Welcome {username}!")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
-        else:
-            st.error("🛑 Wrong username or password")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
+# Inject background CSS with a fixed, full-page background container
+st.markdown(
+    f"""
+    <style>
+    /* Full-page background container */
+    .background-container {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{background_image_url}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: -1;
+    }}
+    /* Optional overlay for better contrast (uncomment if needed) */
+    /* .overlay {{
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.3);
+        z-index: -1;
+    }} */
+    /* Main content wrapper to appear above background */
+    .main-content {{
+        position: relative;
+        z-index: 1;
+        padding: 20px;
+    }}
+    </style>
+    <div class="background-container"></div>
+    """,
+    unsafe_allow_html=True
+)
 
-# Define register function
-def register():
-    st.subheader("Register")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type='password')
-    confirm = st.text_input("Confirm Password", type='password')
-    if 'captcha_q' not in st.session_state:
-        q, a = generate_captcha()
-        st.session_state['captcha_q'] = q
-        st.session_state['captcha_a'] = a
-    captcha_input = st.text_input(st.session_state['captcha_q'])
-    if st.button("Register"):
-        if username in users:
-            st.error("🛑 Username exists")
-        elif password != confirm:
-            st.error("🛑 Passwords don't match")
-        elif captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
-        elif not password:
-            st.error("🛑 Password cannot be empty")
-        else:
-            users[username] = password
-            save_users()
-            st.success("✅ Registered! Please login.")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
-
-# Helper functions
-def save_users():
-    with open("users.json", "w") as f:
-        json.dump(users, f)
-
-def generate_captcha():
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    return f"What is {a} + {b}?", a + b
-
-async def convert_gamertag_to_xuid(gamertag):
-    await asyncio.sleep(1)
-    return "1234567890"
-
-async def send_message(xuid, message, number):
-    await asyncio.sleep(0.5)
-    return True
-
-async def spam_messages(gamertag, message, count):
-    xuid = await convert_gamertag_to_xuid(gamertag)
-    for i in range(count):
-        await send_message(xuid, message, i+1)
-
-async def report_spammer(gamertag, message, count):
-    xuid = await convert_gamertag_to_xuid(gamertag)
-    for i in range(count):
-        await send_message(xuid, message, i+1)
-
-# Main function
-def main():
-    # Load users data
-    global users
-    if os.path.exists("users.json"):
-        with open("users.json", "r") as f:
-            users = json.load(f)
-    else:
-        users = {}
-
-    # Initialize session state
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if 'user' not in st.session_state:
-        st.session_state['user'] = ''
-
-    # Inject background CSS
+# Wrap all your app inside a container to ensure content appears above background
+with st.container():
+    # Show banner image at top
     st.markdown(
-        f"""
-        <style>
-        html, body {{
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-        }}
-        .background-image {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('{background_image_url}');
-            background-size: cover;
-            background-position: center;
-            z-index: -1;
-        }}
-        /* Optional overlay for contrast:
-        .overlay {{
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.3);
-            z-index: -1;
-        }}
-        */
-        .main-content {{
-            position: relative;
-            z-index: 1;
-            padding: 20px;
-        }}
-        </style>
-        <div class="background-image"></div>
-        """,
+        f'<img src="{banner_image_url}" style="width:100%; max-width:600px; display:block; margin:auto;">',
         unsafe_allow_html=True
     )
 
@@ -183,13 +91,7 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Display banner image at top
-    st.markdown(
-        f'<img src="{banner_image_url}" style="width:100%; max-width:600px; display:block; margin:auto;">',
-        unsafe_allow_html=True
-    )
-
-    # Hide Streamlit default UI
+    # Hide default Streamlit UI elements
     st.markdown(
         """
         <style>
@@ -203,13 +105,15 @@ def main():
     )
 
     # Authentication flow
-    if not st.session_state['logged_in']:
+    if not st.session_state.get('logged_in', False):
         choice = st.radio("Create account or login:", ["Login", "Register"])
         if choice == "Login":
             login()
         else:
             register()
-        return
+        # Exit main function early if not logged in
+        if not st.session_state.get('logged_in', False):
+            exit()
 
     # Main menu
     st.title("Xbox Tool - Main Menu")
@@ -260,5 +164,85 @@ def main():
         st.session_state['user'] = ""
         st.experimental_rerun()
 
-if __name__ == "__main__":
-    main()
+# Your existing functions (login, register, convert_gamertag_to_xuid, send_message, spam_messages, report_spammer)
+# should be included here as before...
+
+# For brevity, include the functions from your earlier code here:
+def login():
+    st.subheader("Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type='password')
+    if 'captcha_q' not in st.session_state:
+        q,a = generate_captcha()
+        st.session_state['captcha_q'] = q
+        st.session_state['captcha_a'] = a
+    captcha_input = st.text_input(st.session_state['captcha_q'])
+    if st.button("Login"):
+        if captcha_input != str(st.session_state['captcha_a']):
+            st.error("🛑 Wrong captcha")
+        elif username in users and users[username] == password:
+            st.session_state['logged_in'] = True
+            st.session_state['user'] = username
+            st.success(f"✅ Welcome {username}!")
+            q, a = generate_captcha()
+            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
+        else:
+            st.error("🛑 Wrong username or password")
+            q, a = generate_captcha()
+            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
+
+def register():
+    st.subheader("Register")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type='password')
+    confirm = st.text_input("Confirm Password", type='password')
+    if 'captcha_q' not in st.session_state:
+        q,a = generate_captcha()
+        st.session_state['captcha_q'] = q
+        st.session_state['captcha_a'] = a
+    captcha_input = st.text_input(st.session_state['captcha_q'])
+    if st.button("Register"):
+        if username in users:
+            st.error("🛑 Username exists")
+        elif password != confirm:
+            st.error("🛑 Passwords don't match")
+        elif captcha_input != str(st.session_state['captcha_a']):
+            st.error("🛑 Wrong captcha")
+        elif not password:
+            st.error("🛑 Password cannot be empty")
+        else:
+            users[username] = password
+            save_users()
+            st.success("✅ Registered! Please login.")
+            q, a = generate_captcha()
+            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
+
+async def convert_gamertag_to_xuid(gamertag):
+    await asyncio.sleep(1)
+    return "1234567890"
+
+async def send_message(xuid, message, number):
+    await asyncio.sleep(0.5)
+    return True
+
+async def spam_messages(gamertag, message, count):
+    xuid = await convert_gamertag_to_xuid(gamertag)
+    for i in range(count):
+        await send_message(xuid, message, i+1)
+
+async def report_spammer(gamertag, message, count):
+    xuid = await convert_gamertag_to_xuid(gamertag)
+    for i in range(count):
+        await send_message(xuid, message, i+1)
+
+def save_users():
+    with open("users.json", "w") as f:
+        json.dump(users, f)
+
+def generate_captcha():
+    a = random.randint(1, 10)
+    b = random.randint(1, 10)
+    return f"What is {a} + {b}?", a + b
+
+# Call main() if needed, but in this structure, the main logic is outside
+# so no need for a separate main() function here.
