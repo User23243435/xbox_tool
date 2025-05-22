@@ -106,10 +106,10 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-# --- API key for gamertag to XUID ---
-API_KEY = "YOUR_ACTUAL_API_KEY"  # <-- Replace this with your real API key
+# --- API key (replace with your real key) ---
+API_KEY = "YOUR_ACTUAL_API_KEY"
 
-# --- Convert gamertag to XUID with error handling ---
+# --- Convert gamertag to XUID ---
 async def convert_gamertag_to_xuid(gamertag):
     try:
         url = f"https://xbl.io/api/v2/search/{gamertag}"
@@ -186,36 +186,37 @@ def login():
 
 # --- Main app ---
 def main():
-    if not st.session_state['logged_in']:
+    st.write("Starting main()")  # <-- Debug: confirm function runs
+    
+    # Check login state
+    if not st.session_state.get('logged_in', False):
         choice = st.radio("Create account or login:", ["Login", "Register"])
         if choice == "Login":
             login()
         else:
             register()
         return
-
-    # Main interface
+    
+    # Show logged-in info
     st.write(f"Logged in as: {st.session_state['user']}")
-
+    
     # --- Gamertag to XUID ---
     st.subheader("Gamertag to XUID Conversion")
     gamertag_input = st.text_input("Enter Gamertag")
     if st.button("Convert to XUID"):
         if gamertag_input:
-            # Call async function with debugging
             xuid = asyncio.run(convert_gamertag_to_xuid(gamertag_input))
             if xuid:
                 st.success(f"XUID: {xuid}")
             else:
                 st.error("Failed to get XUID. Check API key or gamertag.")
-
+    
     # --- Ban XUID ---
     st.subheader("Ban XUID")
     xuid_to_ban = st.text_input("Enter XUID to ban")
     if st.button("Ban XUID"):
-        # Placeholder for banning logic
         st.success(f"XUID {xuid_to_ban} banned!")
-
+    
     # --- Spam Messages ---
     st.subheader("Spam Messages")
     spam_gamertag = st.text_input("Gamertag to spam")
@@ -225,7 +226,7 @@ def main():
         if spam_gamertag and spam_message:
             asyncio.run(spam_messages(spam_gamertag, spam_message, int(spam_count)))
             st.success("Spam sent!")
-
+    
     # --- Report Spammer ---
     st.subheader("Report Spammer")
     report_gamertag = st.text_input("Gamertag to report")
@@ -235,22 +236,21 @@ def main():
         if report_gamertag and report_message:
             asyncio.run(report_spammer(report_gamertag, report_message, int(report_count)))
             st.success("Reports sent!")
-
+    
     # --- Logout ---
     if st.button("Logout"):
         st.session_state['logged_in'] = False
         st.session_state['user'] = ""
         st.experimental_rerun()
 
-# --- Async functions for spam and report ---
+# --- Async functions ---
 async def spam_messages(gamertag, message, count):
     xuid = await convert_gamertag_to_xuid(gamertag)
     if not xuid:
         st.error("Could not convert gamertag to XUID.")
         return
     for _ in range(count):
-        await asyncio.sleep(0.1)  # simulate delay
-        # Here you'd implement actual message sending logic
+        await asyncio.sleep(0.1)
         print(f"Sent message to XUID {xuid}: {message}")
 
 async def report_spammer(gamertag, message, count):
@@ -260,7 +260,6 @@ async def report_spammer(gamertag, message, count):
         return
     for _ in range(count):
         await asyncio.sleep(0.1)
-        # Implement actual report logic here
         print(f"Reported XUID {xuid}: {message}")
 
 if __name__ == "__main__":
