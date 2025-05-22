@@ -212,7 +212,6 @@ def main():
         st.subheader("Convert Gamertag to XUID")
         gamertag = st.text_input("Enter Gamertag")
         if st.button("Convert"):
-            # Show loading indicator
             with st.spinner('Converting...'):
                 xuid = asyncio.run(convert_gamertag_to_xuid(gamertag))
             st.success(f"XUID for {gamertag} is {xuid}")
@@ -221,7 +220,7 @@ def main():
         st.subheader("Ban XUID")
         xuid = st.text_input("Enter XUID to ban")
         if st.button("Confirm Ban"):
-            # Here you would add the ban logic
+            # Here you'd add the ban logic
             st.success(f"XUID {xuid} banned!")
 
     elif option == "Spam Messages":
