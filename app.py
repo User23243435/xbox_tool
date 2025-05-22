@@ -4,19 +4,19 @@ import asyncio
 import json
 import random
 
-# 1. Set page title and emoji icon (browser tab)
+# 1. Configure the page with title and emoji icon
 st.set_page_config(
     page_title="Xbox Tool",
     page_icon="🎮"
 )
 
-# 2. Add your custom icon for iOS (replace with your PNG URL)
+# 2. Add your custom home screen icon (replace URL with your PNG link)
 st.markdown(
-    '<link rel="apple-touch-icon" href="https://i.imgur.com/sZMG8WG.png" />',
+    '<link rel="apple-touch-icon" href="https://i.imgur.com/27Wxhe3.png" />',
     unsafe_allow_html=True
 )
 
-# 3. Remove default margins/padding to fix top white border & set background
+# 3. Remove default margins/padding and set background
 st.markdown(
     """
     <style>
@@ -24,16 +24,18 @@ st.markdown(
         margin: 0;
         padding: 0;
     }
+    /* Fix for top white border on mobile devices */
     .stApp {
         margin-top: 0;
         padding-top: 0;
+        /* Your background image */
         background-image: url("https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         min-height: 100vh;
     }
-    /* Hide default menu and footer for a cleaner look */
+    /* Hide default Streamlit menu and footer for a cleaner look */
     header {display: none !important;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -51,13 +53,22 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Your login/register logic now ---
+# --- Your login/register logic with alert box function ---
+
+# Helper function to show messages inside an orange box
+def show_alert(text):
+    st.markdown(
+        f'<div style="background-color:#FFA500; padding:10px; border-radius:5px;">{text}</div>',
+        unsafe_allow_html=True
+    )
+
+# Initialize session state
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user' not in st.session_state:
     st.session_state['user'] = ''
 
-# Load users
+# Load existing users
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -73,13 +84,7 @@ def generate_captcha():
     b = random.randint(1, 10)
     return f"What is {a} + {b}?", a + b
 
-def show_alert(text):
-    # Show text inside an orange box (like error message)
-    st.markdown(
-        f'<div style="background-color:#FFA500; padding:10px; border-radius:5px;">{text}</div>',
-        unsafe_allow_html=True
-    )
-
+# Login function
 def login():
     st.subheader("Login")
     username = st.text_input("Username")
@@ -103,6 +108,7 @@ def login():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
+# Register function
 def register():
     st.subheader("Register")
     username = st.text_input("Username")
@@ -129,7 +135,7 @@ def register():
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
 
-# Main app logic
+# Main logic: login/register or main app
 if not st.session_state['logged_in']:
     choice = st.radio("Create account or login:", ["Login", "Register"])
     if choice == "Login":
@@ -139,7 +145,7 @@ if not st.session_state['logged_in']:
     if not st.session_state['logged_in']:
         st.stop()
 
-# Main menu options
+# Main menu actions
 option = st.radio("Choose an action:", [
     "Convert Gamertag to XUID",
     "Ban XUID",
@@ -165,7 +171,6 @@ elif option == "Spam Messages":
     message = st.text_area("Message")
     count = st.number_input("Number of messages", min_value=1)
     if st.button("Start Spam"):
-        # simulate spam
         for _ in range(int(count)):
             pass
         st.success("Spam sent!")
@@ -175,7 +180,6 @@ elif option == "Report Spammer":
     report_message = st.text_area("Report message")
     count = st.number_input("Number of reports", min_value=1)
     if st.button("Send Reports"):
-        # simulate report
         for _ in range(int(count)):
             pass
         st.success("Reports sent!")
