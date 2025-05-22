@@ -4,8 +4,10 @@ import json
 import os
 import random
 
-# ==================== Function Definitions ====================
+# ==================== Define constants at the top ====================
+BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1506744038136-46273834b3fb"  # Replace with your preferred image
 
+# ==================== All functions first ====================
 def save_users():
     with open("users.json", "w") as f:
         json.dump(users, f)
@@ -31,7 +33,6 @@ def login():
             st.session_state['logged_in'] = True
             st.session_state['user'] = username
             st.success(f"✅ Welcome {username}!")
-            # generate new captcha
             q, a = generate_captcha()
             st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
         else:
@@ -83,8 +84,7 @@ async def report_spammer(gamertag, message, count):
     for i in range(count):
         await send_message(xuid, message, i+1)
 
-# ==================== Main App Function ====================
-
+# ==================== Main app ====================
 def main():
     # Load or initialize users
     global users
@@ -100,70 +100,43 @@ def main():
     if 'user' not in st.session_state:
         st.session_state['user'] = ''
 
-    # ==================== Background CSS ====================
-    background_image_url = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
-    st.markdown(
-        f"""
-        <style>
-        /* Fixed full-page background */
-        .background-container {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('{background_image_url}');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -1;
-        }}
-        /* Main content above background */
-        .main-content {{
-            position: relative;
-            z-index: 1;
-            padding: 20px;
-        }}
-        /* Floating Xbox GIF */
-        .floating-logo {{
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 150px;
-            height: 150px;
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0.8;
-            animation: float 3s ease-in-out infinite;
-        }}
-        @keyframes float {{
-            0% {{ transform: translateY(0); }}
-            50% {{ transform: translateY(-10px); }}
-            100% {{ transform: translateY(0); }}
-        }}
-        </style>
-        <div class="background-container"></div>
-        """,
-        unsafe_allow_html=True
-    )
+    # Inject background CSS only once
+    if 'bg_injected' not in st.session_state:
+        st.markdown(
+            f"""
+            <style>
+            /* Fixed full-page background */
+            .background-container {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-image: url('{BACKGROUND_IMAGE_URL}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                z-index: -1;
+            }}
+            /* Main content above background */
+            .main-content {{
+                position: relative;
+                z-index: 1;
+                padding: 20px;
+            }}
+            </style>
+            <div class="background-container"></div>
+            """,
+            unsafe_allow_html=True
+        )
+        st.session_state['bg_injected'] = True
 
-    # Wrap app content
+    # App content
     with st.container():
-        # Banner Image
+        # Banner
         banner_url = "https://i.imgur.com/u5Lf7fu.png"
         st.markdown(
             f'<img src="{banner_url}" style="width:100%; max-width:600px; display:block; margin:auto;">',
-            unsafe_allow_html=True
-        )
-
-        # Xbox GIF
-        xbox_gif_url = "https://media.giphy.com/media/3oKIPwoe7Xh7e5Yv4w/giphy.gif"
-        st.markdown(
-            f"""
-            <div class="floating-logo">
-                <img src="{xbox_gif_url}" style="width:100%; height:auto;">
-            </div>
-            """,
             unsafe_allow_html=True
         )
 
@@ -180,18 +153,17 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Authentication flow
+        # Authentication
         if not st.session_state.get('logged_in', False):
             choice = st.radio("Create account or login:", ["Login", "Register"])
             if choice == "Login":
                 login()
             else:
                 register()
-            # If not logged in, stop here
             if not st.session_state.get('logged_in', False):
                 return
 
-        # Main menu options
+        # Main menu
         st.title("Xbox Tool - Main Menu")
         option = st.radio("Choose an action:", [
             "Convert Gamertag to XUID",
