@@ -12,46 +12,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --------- Optional: Add manifest for home screen icon ---------
-# Create a minimal manifest pointing to an icon (if you have one)
-# This helps browsers recognize the icon when added to home screen
-st.markdown(
-    """
-    <link rel="manifest" href="manifest.json">
-    """,
-    unsafe_allow_html=True
-)
-
-# --------- Create a minimal manifest.json content dynamically ----------
-# Let's write a minimal manifest dynamically in Streamlit
-# Note: Streamlit doesn't support writing files directly in the script, 
-# so you'd need to serve a static file or host it somewhere.
-# For simplicity, you can host a static manifest.json and link to it.
-# Or, if you want full control, you can embed the manifest as a data URI, but browsers prefer separate files.
-
-# For this example, assume you host a manifest.json at a URL:
-# Example: "https://yourdomain.com/manifest.json"
-# Make sure the manifest.json contains:
-# {
-#   "name": "Xbox Tool",
-#   "short_name": "XboxTool",
-#   "start_url": ".",
-#   "display": "standalone",
-#   "icons": [
-#     {
-#       "src": "https://i.imgur.com/uAQOm2Y.png",
-#       "sizes": "192x192",
-#       "type": "image/png"
-#     }
-#   ]
-# }
-
-# For simplicity, the above code assumes you have such a manifest hosted.
-
-# --------- Rest of your code ---------
+# --------- Constants ---------
 BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
 HEADER_IMAGE_URL = "https://i.imgur.com/uAQOm2Y.png"
 
+# --------- Function definitions ---------
 def generate_captcha():
     a = random.randint(1, 10)
     b = random.randint(1, 10)
@@ -181,7 +146,7 @@ def main():
 
     # App content container
     with st.container():
-        # Big header image (no border, styled)
+        # Big header image
         st.markdown(
             f'<div style="text-align:center;">'
             f'<img src="{HEADER_IMAGE_URL}" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
