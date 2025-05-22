@@ -6,6 +6,7 @@ import random
 
 # --------- Constants ---------
 BACKGROUND_URL = "https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png"
+HEADER_IMAGE_URL = "https://i.imgur.com/uAQOm2Y.png"
 
 # --------- Function definitions (must come first) ---------
 
@@ -119,10 +120,13 @@ def main():
         )
         st.session_state['bg_injected'] = True
 
-    # App content
+    # App content container
     with st.container():
-        # Optional header (your logo/text)
-        st.markdown('<h1 style="text-align:center; color:white;">XBOX TOOL</h1>', unsafe_allow_html=True)
+        # Header with image replacing "XBOX TOOL"
+        st.markdown(
+            f'<div style="text-align:center;"><img src="{HEADER_IMAGE_URL}" style="width:300px;"></div>',
+            unsafe_allow_html=True
+        )
 
         # Hide default Streamlit UI
         st.markdown(
