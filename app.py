@@ -3,10 +3,10 @@ import os
 import json
 import requests
 
-# Set page config (must be first)
+# --- 1. Set page config (must be first) ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
 
-# Custom style
+# --- 2. Custom style ---
 st.markdown(
     """
     <style>
@@ -25,7 +25,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Header image
+# --- 3. Header image ---
 st.markdown(
     '<div style="text-align:center;">'
     '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
@@ -33,7 +33,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load data
+# --- 4. Load data ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -54,24 +54,30 @@ def save_keys():
     with open("user_keys.json", "w") as f:
         json.dump(user_keys, f)
 
-# Validation function
+# --- 5. Validate API key by making a request to account/ownership ---
 def validate_api_key(api_key):
-    # Use an endpoint that should succeed if your API key is valid
     url = "https://xbl.io/api/v5/account/ownership"
     headers = {'X-Auth': api_key}
     try:
         response = requests.get(url, headers=headers)
-        return response.status_code == 200
-    except:
+        if response.status_code == 200:
+            return True
+        else:
+            # Uncomment below to debug response details
+            # print(f"Status: {response.status_code}")
+            # print(f"Response: {response.text}")
+            return False
+    except Exception as e:
+        # print(f"Error: {e}")
         return False
 
-# Manage login state
+# --- 6. Manage login state ---
 if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
 if 'api_key_valid' not in st.session_state:
     st.session_state['api_key_valid'] = False
 
-# Check if user has a valid saved API key
+# --- 7. Check if user has a valid saved API key ---
 if st.session_state['current_user']:
     current_user = st.session_state['current_user']
     user_api_key = user_keys.get(current_user, '')
@@ -83,7 +89,7 @@ if st.session_state['current_user']:
             st.session_state['current_user'] = None
             st.session_state['api_key_valid'] = False
 
-# Ask for API key if not valid
+# --- 8. Prompt for API key if not validated ---
 if not st.session_state['api_key_valid']:
     st.markdown("### Click here if you don't have an API key:")
     st.markdown("[Get your Xbox API Key](https://xbl.io/console)")
@@ -101,7 +107,7 @@ if not st.session_state['api_key_valid']:
             st.error("Invalid API Key. Please check and try again.")
     st.stop()
 
-# Registration or login for tempuser
+# --- 9. Registration or login for tempuser ---
 if st.session_state['current_user']:
     current_user = st.session_state['current_user']
     user_api_key = user_keys.get(current_user, '')
@@ -118,7 +124,6 @@ if st.session_state['current_user']:
                 else:
                     users[username] = {'password': password}
                     save_users()
-                    # Save API key to this user
                     user_keys[username] = user_api_key
                     del user_keys['tempuser']
                     save_keys()
@@ -127,9 +132,7 @@ if st.session_state['current_user']:
                     st.experimental_rerun()
             else:
                 if username in users and users[username]['password'] == password:
-                    # Log in
                     st.session_state['current_user'] = username
-                    # Save API key to user
                     user_keys[username] = user_api_key
                     del user_keys['tempuser']
                     save_keys()
@@ -139,7 +142,7 @@ if st.session_state['current_user']:
                     st.error("Invalid username or password")
         st.stop()
 
-    # --- Main App ---
+    # --- 10. Main app actions ---
     if user_api_key:
         action = st.radio("Choose an action:", [
             "Convert Gamertag to XUID",
