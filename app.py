@@ -62,9 +62,9 @@ def show_alert(text):
     st.markdown(f'<div style="background-color:#FFA500; padding:10px; border-radius:5px;">{text}</div>', unsafe_allow_html=True)
 
 # ---- Authentication setup ----
-# Replace with your actual client ID and secret
-CLIENT_ID = "YOUR_CLIENT_ID"  # <--- Replace with your Xbox app client id
-CLIENT_SECRET = "YOUR_CLIENT_SECRET"  # <--- Replace with your secret
+# Replace these with your actual Azure app credentials
+CLIENT_ID = "YOUR_CLIENT_ID"  # <-- Replace with your Azure app's Client ID
+CLIENT_SECRET = "YOUR_CLIENT_SECRET"  # <-- Replace with your Azure app's Client Secret
 REDIRECT_URI = "http://localhost:8501"
 
 def get_oauth_url():
@@ -101,8 +101,7 @@ if st.session_state['current_user'] is None:
             resp = requests.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', data=data)
             if resp.status_code == 200:
                 token = resp.json()['access_token']
-                # Save token associated with a username (or get username from API)
-                # For simplicity, ask user for username now
+                # Ask user for a username to link this account
                 username = st.text_input("Enter a username to link this account")
                 if st.button("Link Account") and username:
                     users[username] = token
@@ -163,7 +162,6 @@ def spam_messages():
     message = st.text_area("Message")
     count = st.number_input("Number of messages", min_value=1)
     if st.button("Start Spam"):
-        # Call API repeatedly or as per API design
         for _ in range(int(count)):
             pass
         st.success("Spam sent!")
