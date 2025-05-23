@@ -1,47 +1,27 @@
 import streamlit as st
+import os
+import json
 
-# 1. Set page title and icon (emoji for browser tab)
-st.set_page_config(
-    page_title="Xbox Tool",
-    page_icon="🎮"
-)
-
-# 2. Add your custom icon for iOS home screen (replace URL with your image)
-st.markdown(
-    '<link rel="apple-touch-icon" href="https://i.imgur.com/sZMG8WG.png" />',
-    unsafe_allow_html=True
-)
-
-# 3. Remove default margins/padding to eliminate top white space/border
+# --- CONFIG & STYLE ---
+st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
 st.markdown(
     """
     <style>
-    body {
-        margin: 0;
-        padding: 0;
-    }
-    /* Fix for top white border on mobile devices */
+    body { margin:0; padding:0; }
     .stApp {
-        margin-top: 0;
-        padding-top: 0;
-        /* Background image covering entire page */
+        margin-top:0; padding-top:0;
         background-image: url("https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        min-height: 100vh;
+        background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 100vh;
     }
-    /* Hide Streamlit default menu/footer for cleaner look */
-    header {display: none !important;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    div[data-testid="stHelpSidebar"] {display: none;}
+    header { display:none !important; }
+    #MainMenu { visibility:hidden; }
+    footer { visibility:hidden; }
+    div[data-testid="stHelpSidebar"] { display:none; }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# 4. App header image
 st.markdown(
     '<div style="text-align:center;">'
     '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
@@ -49,21 +29,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 5. Main app content - example
-st.title("Xbox Tool")
-
-# Simple login/register example (your existing logic can go here)
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
-if 'user' not in st.session_state:
-    st.session_state['user'] = ''
-
-def generate_captcha():
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    return f"What is {a} + {b}?", a + b
-
-# Load users
+# --- Load users ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -74,67 +40,51 @@ def save_users():
     with open("users.json", "w") as f:
         json.dump(users, f)
 
-def login():
-    st.subheader("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type='password')
-    if 'captcha_q' not in st.session_state:
-        q, a = generate_captcha()
-        st.session_state['captcha_q'] = q
-        st.session_state['captcha_a'] = a
-    captcha_input = st.text_input(st.session_state['captcha_q'])
-    if st.button("Login"):
-        if captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
-        elif username in users and users[username] == password:
-            st.session_state['logged_in'] = True
-            st.session_state['user'] = username
-            st.success(f"✅ Welcome {username}!")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
-        else:
-            st.error("🛑 Wrong username or password")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
-
-def register():
-    st.subheader("Register")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type='password')
-    confirm = st.text_input("Confirm Password", type='password')
-    if 'captcha_q' not in st.session_state:
-        q, a = generate_captcha()
-        st.session_state['captcha_q'] = q
-        st.session_state['captcha_a'] = a
-    captcha_input = st.text_input(st.session_state['captcha_q'])
-    if st.button("Register"):
-        if username in users:
-            st.error("🛑 Username exists")
-        elif password != confirm:
-            st.error("🛑 Passwords don't match")
-        elif captcha_input != str(st.session_state['captcha_a']):
-            st.error("🛑 Wrong captcha")
-        elif not password:
-            st.error("🛑 Password cannot be empty")
-        else:
-            users[username] = password
-            save_users()
-            st.success("✅ Registered! Please login.")
-            q, a = generate_captcha()
-            st.session_state['captcha_q'], st.session_state['captcha_a'] = q, a
-
-# Main UI: login/register or main app
-if not st.session_state['logged_in']:
-    choice = st.radio("Create account or login:", ["Login", "Register"])
-    if choice == "Login":
-        login()
-    else:
-        register()
-    if not st.session_state['logged_in']:
+# --- Load API key ---
+def load_api_key():
+    try:
+        with open('api_key.txt', 'r') as f:
+            return f.read().strip()
+    except:
+        st.error("Missing api_key.txt! Please create this file with your API key.")
         st.stop()
 
-# Example main menu
-option = st.radio("Choose an action:", [
+API_KEY = load_api_key()
+
+# --- Login/Register ---
+if 'current_user' not in st.session_state:
+    st.session_state['current_user'] = None
+
+if not st.session_state['current_user']:
+    st.markdown("### Welcome! Please Register or Login")
+    mode = st.radio("Mode", ["Login", "Register"])
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Submit"):
+        if mode == "Register":
+            if not username or not password:
+                st.error("Fill in username and password")
+            elif username in users:
+                st.error("Username exists")
+            else:
+                users[username] = {'password': password}
+                save_users()
+                st.success("Registered! Please login.")
+        else:
+            if username in users and users[username]['password'] == password:
+                st.session_state['current_user'] = username
+                st.success(f"Logged in as {username}")
+                st.experimental_rerun()
+            else:
+                st.error("Invalid username/password")
+    st.stop()
+
+# --- Main Menu ---
+st.title(f"Welcome {st.session_state['current_user']}!")
+
+action = st.radio("Select an action:", [
     "Convert Gamertag to XUID",
     "Ban XUID",
     "Spam Messages",
@@ -142,38 +92,53 @@ option = st.radio("Choose an action:", [
     "Logout"
 ])
 
-if option == "Convert Gamertag to XUID":
+def make_api_call(endpoint, params=None):
+    # Placeholder for real API call
+    return {"status": "success", "data": "Fake data"}
+
+def convert_gamertag():
     gamertag = st.text_input("Enter Gamertag")
     if st.button("Convert"):
-        xuid = asyncio.run(asyncio.sleep(1, result="1234567890"))  # simulate async
-        st.success(f"XUID: {xuid}")
+        # Replace with real API call
+        xuid = "1234567890"
+        st.success(f"XUID for {gamertag}: {xuid}")
 
-elif option == "Ban XUID":
+def ban_xuid():
     xuid = st.text_input("Enter XUID to ban")
     if st.button("Confirm Ban"):
+        # Replace with real API call
         st.success(f"XUID {xuid} banned!")
 
-elif option == "Spam Messages":
+def spam_messages():
     gamertag = st.text_input("Gamertag to spam")
     message = st.text_area("Message")
     count = st.number_input("Number of messages", min_value=1)
     if st.button("Start Spam"):
-        # simulate spam
         for _ in range(int(count)):
             pass
         st.success("Spam sent!")
 
-elif option == "Report Spammer":
+def report_spammer():
     gamertag = st.text_input("Gamertag to report")
     report_message = st.text_area("Report message")
     count = st.number_input("Number of reports", min_value=1)
     if st.button("Send Reports"):
-        # simulate report
         for _ in range(int(count)):
             pass
         st.success("Reports sent!")
 
-elif option == "Logout":
-    st.session_state['logged_in'] = False
-    st.session_state['user'] = ""
+def logout():
+    st.session_state['current_user'] = None
     st.experimental_rerun()
+
+# --- Execute action ---
+if action == "Convert Gamertag to XUID":
+    convert_gamertag()
+elif action == "Ban XUID":
+    ban_xuid()
+elif action == "Spam Messages":
+    spam_messages()
+elif action == "Report Spammer":
+    report_spammer()
+elif action == "Logout":
+    logout()
