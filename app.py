@@ -1,9 +1,12 @@
 import streamlit as st
 import os
 import json
+import requests
 
-# Set page config and custom style
+# Set page config - must be the first Streamlit command
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
+
+# Custom background and style
 st.markdown(
     """
     <style>
@@ -22,7 +25,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Header image
+# Header Image
 st.markdown(
     '<div style="text-align:center;">'
     '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
@@ -30,7 +33,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load user data
+# Load existing user data
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -56,12 +59,11 @@ st.title("Enter Your XboxAPI Key")
 api_key = st.text_input("Your XboxAPI Key")
 
 if st.button("Save API Key") and api_key:
-    # Save under a dummy user, or handle later after login
+    # Save under a temporary user; will be associated after login
     temp_username = "tempuser"
     user_keys[temp_username] = api_key
     save_keys()
     st.success("API key saved. Please register or login.")
-    # Set a flag to proceed
     st.session_state['api_key_saved'] = True
 
 # -------- Step 2: Register/Login --------
@@ -78,7 +80,7 @@ if st.session_state.get('api_key_saved'):
         if st.button("Submit"):
             if mode == "Register":
                 if username in users:
-                    st.error("Username exists.")
+                    st.error("Username already exists")
                 else:
                     users[username] = {'password': password}
                     save_users()
@@ -86,13 +88,13 @@ if st.session_state.get('api_key_saved'):
             else:
                 if username in users and users[username]['password'] == password:
                     st.session_state['current_user'] = username
-                    # Save API key if entered now
+                    # Save API key if provided now
                     if 'api_key' in locals() and api_key:
                         user_keys[username] = api_key
                         save_keys()
                     st.success(f"Logged in as {username}")
                 else:
-                    st.error("Invalid username or password.")
+                    st.error("Invalid username or password")
         st.stop()
 
     # User is logged in
@@ -105,13 +107,32 @@ if st.session_state.get('api_key_saved'):
         st.markdown("[Get your Xbox API Key](https://xbl.io/console)")
         new_key = st.text_input("Enter your XboxAPI key")
         if st.button("Save API Key") and new_key:
-            user_keys[username] = new_key
-            save_keys()
-            st.success("API key saved.")
-            user_api_key = new_key
+            # Validate the API key
+            def validate_api_key(key):
+                # Make a test API request to validate
+                headers = {'X-Auth': key}
+                try:
+                    response = requests.get("https://xbl.io/api/v5/users/xuid/1234567890", headers=headers)
+                    if response.status_code == 200:
+                        return True
+                except:
+                    pass
+                return False
+
+            if validate_api_key(new_key):
+                users[username] = {'password': users[username]['password']}
+                user_keys[username] = new_key
+                save_users()
+                save_keys()
+                st.success("API key validated and saved.")
+                user_api_key = new_key
+            else:
+                st.error("Invalid API Key. Please check and try again.")
+        st.stop()
 
     # Proceed if API key is available
     if user_api_key:
+        # Show main menu
         action = st.radio("Select an action:", [
             "Convert Gamertag to XUID",
             "Ban XUID",
@@ -121,9 +142,9 @@ if st.session_state.get('api_key_saved'):
         ])
 
         def make_api_call(endpoint, params=None):
-            # Replace with your actual API request
+            # Replace with actual API request
             headers = {'X-Auth': user_api_key}
-            # response = requests.get(f"https://xbl.io/api/{endpoint}", headers=headers, params=params)
+            # Example: response = requests.get(f"https://xbl.io/api/{endpoint}", headers=headers, params=params)
             return {"status": "success", "data": "Fake data"}
 
         def convert_gamertag():
