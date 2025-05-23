@@ -3,7 +3,7 @@ import os
 import json
 import requests
 
-# --- 1. Set page config (must be first) ---
+# --- 1. Set page config ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
 
 # --- 2. Custom style ---
@@ -33,7 +33,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 4. Load data ---
+# --- 4. Load users and save functions ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -44,160 +44,112 @@ def save_users():
     with open("users.json", "w") as f:
         json.dump(users, f)
 
-if os.path.exists("user_keys.json"):
-    with open("user_keys.json", "r") as f:
-        user_keys = json.load(f)
-else:
-    user_keys = {}
+# --- 5. Validate API key ---
+# Use your fixed API key
+API_KEY = "8bdd-8041d82bb8e4"
 
-def save_keys():
-    with open("user_keys.json", "w") as f:
-        json.dump(user_keys, f)
-
-# --- 5. Validate API key by making a request to account/ownership ---
 def validate_api_key(api_key):
     url = "https://xbl.io/api/v5/account/ownership"
     headers = {'X-Auth': api_key}
     try:
         response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return True
-        else:
-            # Uncomment below to debug response details
-            # print(f"Status: {response.status_code}")
-            # print(f"Response: {response.text}")
-            return False
-    except Exception as e:
-        # print(f"Error: {e}")
+        return response.status_code == 200
+    except:
         return False
 
 # --- 6. Manage login state ---
 if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
-if 'api_key_valid' not in st.session_state:
-    st.session_state['api_key_valid'] = False
 
-# --- 7. Check if user has a valid saved API key ---
-if st.session_state['current_user']:
-    current_user = st.session_state['current_user']
-    user_api_key = user_keys.get(current_user, '')
-    if user_api_key:
-        if validate_api_key(user_api_key):
-            st.session_state['api_key_valid'] = True
+# --- 7. If not logged in, show login/register ---
+if not st.session_state['current_user']:
+    st.markdown("### Welcome! Please Register or Login")
+    mode = st.radio("Mode", ["Login", "Register"])
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Submit"):
+        if mode == "Register":
+            if username in users:
+                st.error("Username already exists.")
+            else:
+                users[username] = {'password': password}
+                save_users()
+                st.success("Registered! Please login.")
         else:
-            # Invalid key, reset session
-            st.session_state['current_user'] = None
-            st.session_state['api_key_valid'] = False
-
-# --- 8. Prompt for API key if not validated ---
-if not st.session_state['api_key_valid']:
-    st.markdown("### Click here if you don't have an API key:")
-    st.markdown("[Get your Xbox API Key](https://xbl.io/console)")
-    new_key = st.text_input("Enter your XboxAPI key")
-    if st.button("Save API Key") and new_key:
-        if validate_api_key(new_key):
-            # Save as temporary user
-            temp_username = "tempuser"
-            user_keys[temp_username] = new_key
-            save_keys()
-            st.session_state['current_user'] = temp_username
-            st.success("API Key validated! Please register or login.")
-            st.experimental_rerun()
-        else:
-            st.error("Invalid API Key. Please check and try again.")
+            if username in users and users[username]['password'] == password:
+                st.session_state['current_user'] = username
+                st.success(f"Logged in as {username}")
+                st.experimental_rerun()
+            else:
+                st.error("Invalid username or password")
     st.stop()
 
-# --- 9. Registration or login for tempuser ---
-if st.session_state['current_user']:
-    current_user = st.session_state['current_user']
-    user_api_key = user_keys.get(current_user, '')
+# --- 8. Logged in, show main app ---
+st.title(f"Welcome {st.session_state['current_user']}!")
 
-    if current_user == 'tempuser' and user_api_key:
-        st.title("Register or Login")
-        mode = st.radio("Mode", ["Login", "Register"])
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        if st.button("Submit"):
-            if mode == "Register":
-                if username in users:
-                    st.error("Username already exists.")
-                else:
-                    users[username] = {'password': password}
-                    save_users()
-                    user_keys[username] = user_api_key
-                    del user_keys['tempuser']
-                    save_keys()
-                    st.session_state['current_user'] = username
-                    st.success(f"Registered and logged in as {username}")
-                    st.experimental_rerun()
-            else:
-                if username in users and users[username]['password'] == password:
-                    st.session_state['current_user'] = username
-                    user_keys[username] = user_api_key
-                    del user_keys['tempuser']
-                    save_keys()
-                    st.success(f"Logged in as {username}")
-                    st.experimental_rerun()
-                else:
-                    st.error("Invalid username or password")
-        st.stop()
+action = st.radio("Choose an action:", [
+    "Convert Gamertag to XUID",
+    "Ban XUID",
+    "Spam Messages",
+    "Report Spammer",
+    "Logout"
+])
 
-    # --- 10. Main app actions ---
-    if user_api_key:
-        action = st.radio("Choose an action:", [
-            "Convert Gamertag to XUID",
-            "Ban XUID",
-            "Spam Messages",
-            "Report Spammer",
-            "Logout"
-        ])
+def make_api_call(endpoint, params=None):
+    headers = {'X-Auth': API_KEY}
+    url_map = {
+        "convert_gamertag": "https://xbl.io/api/v5/xuid/convert",
+        "ban_xuid": "https://xbl.io/api/v5/xuid/ban",
+        "spam_messages": "https://xbl.io/api/v5/messages/spam",
+        "report_spammer": "https://xbl.io/api/v5/report"
+    }
+    url = url_map.get(endpoint)
+    # Here, you should implement real API call logic.
+    # For now, just simulate success.
+    return {"status": "success", "data": "Fake data"}
 
-        def make_api_call(endpoint, params=None):
-            headers = {'X-Auth': user_api_key}
-            return {"status": "success", "data": "Fake data"}
+def convert_gamertag():
+    gamertag = st.text_input("Gamertag")
+    if st.button("Convert"):
+        result = make_api_call("convert_gamertag", {'gamertag': gamertag})
+        st.success(f"Simulated XUID: 1234567890 for {gamertag}")
 
-        def convert_gamertag():
-            gamertag = st.text_input("Gamertag")
-            if st.button("Convert"):
-                result = make_api_call("convert_gamertag", {'gamertag': gamertag})
-                st.success(f"Simulated XUID: 1234567890 for {gamertag}")
+def ban_xuid():
+    xuid = st.text_input("XUID to ban")
+    if st.button("Ban XUID"):
+        make_api_call("ban_xuid", {'xuid': xuid})
+        st.success(f"Banned XUID {xuid}")
 
-        def ban_xuid():
-            xuid = st.text_input("XUID to ban")
-            if st.button("Ban XUID"):
-                make_api_call("ban_xuid", {'xuid': xuid})
-                st.success(f"Banned XUID {xuid}")
+def spam_messages():
+    gamertag = st.text_input("Gamertag to spam")
+    message = st.text_area("Message")
+    count = st.number_input("Number of messages", min_value=1)
+    if st.button("Spam"):
+        for _ in range(int(count)):
+            pass
+        st.success("Spam sent!")
 
-        def spam_messages():
-            gamertag = st.text_input("Gamertag to spam")
-            message = st.text_area("Message")
-            count = st.number_input("Number of messages", min_value=1)
-            if st.button("Spam"):
-                for _ in range(int(count)):
-                    pass
-                st.success("Spam sent!")
+def report_spammer():
+    gamertag = st.text_input("Gamertag to report")
+    report_message = st.text_area("Report message")
+    count = st.number_input("Number of reports", min_value=1)
+    if st.button("Send reports"):
+        for _ in range(int(count)):
+            pass
+        st.success("Reports sent!")
 
-        def report_spammer():
-            gamertag = st.text_input("Gamertag to report")
-            report_message = st.text_area("Report message")
-            count = st.number_input("Number of reports", min_value=1)
-            if st.button("Send reports"):
-                for _ in range(int(count)):
-                    pass
-                st.success("Reports sent!")
+def logout():
+    st.session_state['current_user'] = None
+    st.experimental_rerun()
 
-        def logout():
-            st.session_state['current_user'] = None
-            st.experimental_rerun()
-
-        # Run selected action
-        if action == "Convert Gamertag to XUID":
-            convert_gamertag()
-        elif action == "Ban XUID":
-            ban_xuid()
-        elif action == "Spam Messages":
-            spam_messages()
-        elif action == "Report Spammer":
-            report_spammer()
-        elif action == "Logout":
-            logout()
+# Run selected action
+if action == "Convert Gamertag to XUID":
+    convert_gamertag()
+elif action == "Ban XUID":
+    ban_xuid()
+elif action == "Spam Messages":
+    spam_messages()
+elif action == "Report Spammer":
+    report_spammer()
+elif action == "Logout":
+    logout()
