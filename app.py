@@ -67,7 +67,7 @@ def validate_api_key(api_key):
 if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
 
-# --- 8. Login/Register ---
+# --- 8. Login/Register UI ---
 if not st.session_state['current_user']:
     st.markdown("### Welcome! Please Register or Login")
     mode = st.radio("Mode", ["Login", "Register"])
@@ -83,16 +83,17 @@ if not st.session_state['current_user']:
                 users[username] = {'password': password}
                 save_users()
                 st.success("Registration successful! Please login.")
-        else:  # Login
+        else:
             if username in users and users[username]['password'] == password:
                 st.session_state['current_user'] = username
                 st.success(f"Logged in as {username}")
+                # Use rerun safely
                 st.experimental_rerun()
             else:
                 st.error("Invalid username or password")
     st.stop()
 
-# --- 9. Main app ---
+# --- 9. Main app after login ---
 st.title(f"Welcome {st.session_state['current_user']}!")
 
 action = st.radio("Choose an action:", [
@@ -142,7 +143,7 @@ def logout():
     st.session_state['current_user'] = None
     st.experimental_rerun()
 
-# Run actions
+# Run selected action
 if action == "Convert Gamertag to XUID":
     convert_gamertag()
 elif action == "Ban XUID":
