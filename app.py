@@ -53,7 +53,7 @@ def load_api_key():
 
 API_KEY = load_api_key()
 if not API_KEY:
-    st.stop()  # Stop if no API key is loaded
+    st.stop()
 
 # --- Load users ---
 if os.path.exists("users.json"):
@@ -83,31 +83,25 @@ def safe_rerun():
     else:
         st.stop()
 
-# --- Define your multiple API keys ---
+# --- Your API keys ---
 API_KEYS = [
-    "22257de1-4125-42b8-9614-cfb54e835046",
-    "...8a-15ace6a42c11",
-    "...4c-64590843a82e",
-    "...6a-c4e30bc67f64",
-    "...bc-9997cd0e34dc",
-    "...fc-339c2e94a57a",
-    "...ea-98dab872d4b9",
-    "...17-6f7d012c7443",
-    "...1d-f3022e0b2c02",
-    "...e6-f8bb08ef751b",
-    "...c5-d7c3fdc9de15",
-    "...e7-d4bd1d552c32",
-    "...3a-61ac756d9e03",
-    "...55-b8cfbfaa053c",
+    "f6835875-3a0b-4fb4-8536-57f785a7912f",
+    "0cd3c892-64d1-4275-b39d-6509f39fa557",
+    "32f6a5b5-ca4c-41d0-8e60-4c7ba0a1ea69",
+    "45598255-0242-4b37-9baa-905f5199a21e",
+    "2898954c-5e19-46db-bec3-6b481f267fa8",
+    "d45c42ea-113b-44b2-b9ff-33404c4f8b10",
+    "8dd211c2-d984-451d-bbd1-920f8d01ba5f",
+    "778e5372-5018-44ea-9448-567dd4505e57",
+    "15d89583-5fe9-45dd-8dd3-e90f6332bdcf",
+    "a95d22bb-6bf5-4bc4-ab39-8526f9c1b7e0",
 ]
-
-# Create a cycle iterator for API keys
 api_key_cycle = itertools.cycle(API_KEYS)
 
 def get_next_api_key():
     return next(api_key_cycle)
 
-# --- Registration / Login ---
+# --- Login/Register ---
 if not st.session_state['current_user']:
     st.markdown("### Welcome! Please Register or Login")
     mode = st.radio("Mode", ["Login", "Register"])
@@ -138,7 +132,6 @@ if not st.session_state['current_user']:
                 st.error("Invalid username or password")
     st.stop()
 
-# --- Main dashboard ---
 st.title(f"Welcome {st.session_state['current_user']}!")
 
 action = st.radio("Select an action:", [
@@ -161,34 +154,44 @@ async def convert_gamertag_to_xuid(gamertag):
         resp = await session.get(url, headers=headers)
         data = await resp.json()
         if resp.status != 200:
+            print(f"Error fetching XUID: {data}")
             return None
         if "people" in data and len(data["people"]) > 0:
             return data["people"][0]["xuid"]
         return None
 
 async def send_message(xuid, message, session):
+    api_key = get_next_api_key()
     url = "https://xbl.io/api/v2/conversations"
     headers = {
         "accept": "*/*",
-        "x-authorization": get_next_api_key(),
+        "x-authorization": api_key,
         "Content-Type": "application/json"
     }
     payload = {"message": message, "xuid": xuid}
-    resp = await session.post(url, json=payload, headers=headers)
-    # Check response status before parsing JSON
-    if resp.status == 200:
-        try:
-            await resp.json()
-            return True
-        except:
+    try:
+        resp = await session.post(url, json=payload, headers=headers)
+        status = resp.status
+        text = await resp.text()
+        print(f"Using API key: {api_key}")
+        print(f"Response status: {status}")
+        print(f"Response body: {text}")
+
+        if status == 200:
+            try:
+                await resp.json()
+                return True
+            except Exception as e:
+                print(f"JSON decode error: {e}")
+                return False
+        elif status == 429:
+            print("Rate limit hit")
+            return "rate_limit"
+        else:
+            print(f"Error: Status {status}")
             return False
-    elif resp.status == 429:
-        return "rate_limit"
-    else:
-        try:
-            await resp.json()
-        except:
-            pass
+    except Exception as e:
+        print(f"Request exception: {e}")
         return False
 
 async def spam_messages(gamertag, message, amount):
@@ -206,15 +209,7 @@ async def spam_messages(gamertag, message, amount):
             await asyncio.sleep(1)
     return "done"
 
-# --- Run spam asynchronously with UI lock ---
-def run_spam():
-    st.session_state['is_running'] = True
-    with st.spinner("Sending messages..."):
-        result = asyncio.run(spam_messages(target_gamertag, message, count))
-    st.session_state['is_running'] = False
-    return result
-
-# --- UI: Handling User Actions ---
+# --- UI actions with wait indicator ---
 if action == "Convert Gamertag to XUID":
     gamertag = st.text_input("Enter Gamertag")
     if st.button("Convert"):
@@ -227,46 +222,66 @@ if action == "Convert Gamertag to XUID":
 elif action == "Ban XUID":
     xuid = st.text_input("Enter XUID to ban")
     if st.button("Confirm Ban"):
-        # Your ban API logic here
+        # Implement ban logic here
         st.success(f"XUID {xuid} has been banned.")
 elif action == "Spam Messages":
     target_gamertag = st.text_input("Target Gamertag")
     message = st.text_area("Message")
     count = st.number_input("Number of messages", min_value=1)
+
+    # Use session state to track if spam is running
+    is_running = st.session_state.get('is_running', False)
+
+    def start_spam():
+        st.session_state['is_running'] = True
+        st.write("Please wait, sending messages...")
+
+        def run_spam_thread():
+            result = asyncio.run(spam_messages(target_gamertag, message, count))
+            # After finishing, update state and show message
+            st.session_state['is_running'] = False
+            if result == "gamertag_not_found":
+                st.success("Gamertag not found.")
+            elif result == "rate_limit":
+                st.warning("Rate limited! Please wait.")
+            elif result == "failed":
+                st.error("Failed to send some messages.")
+            elif result == "done":
+                st.success("Finished sending messages.")
+            # Rerun to update UI
+            st.experimental_rerun()
+
+        threading.Thread(target=run_spam_thread).start()
+
     start_button = st.button(
         "Start Spam",
-        disabled=st.session_state['is_running']
+        disabled=is_running
     )
+
     if start_button:
-        result = run_spam()
-        # Show result feedback
-        if result == "gamertag_not_found":
-            st.error("Gamertag not found.")
-        elif result == "rate_limit":
-            st.warning("Rate limited! Please wait.")
-        elif result == "failed":
-            st.error("Failed to send some messages.")
-        elif result == "done":
-            st.success("Finished sending messages.")
+        start_spam()
 elif action == "Report Spammer":
     target_gamertag = st.text_input("Gamertag to report")
     reason = st.text_area("Reason")
     count = st.number_input("Number of reports", min_value=1)
-    if st.button("Send Reports"):
-        def flood():
-            headers = {
-                "X-Authorization": get_next_api_key(),
-                "Content-Type": "application/json"
-            }
-            for _ in range(int(count)):
-                try:
-                    requests.post("https://xbl.io/api/report", headers=headers,
-                                  json={"targetGamertag": target_gamertag, "reason": reason})
-                except:
-                    pass
-        threading.Thread(target=flood).start()
+
+    def flood():
+        headers = {
+            "X-Authorization": get_next_api_key(),
+            "Content-Type": "application/json"
+        }
+        for _ in range(int(count)):
+            try:
+                requests.post("https://xbl.io/api/report", headers=headers,
+                              json={"targetGamertag": target_gamertag, "reason": reason})
+            except:
+                pass
         st.success(f"Flooded {target_gamertag} with {int(count)} reports.")
 
+    if st.button("Send Reports"):
+        threading.Thread(target=flood).start()
+        st.success(f"Flooding reports sent to {target_gamertag}.")
+        
 # --- Logout ---
 if action == "Logout":
     st.session_state['current_user'] = None
