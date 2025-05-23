@@ -29,10 +29,24 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Load users ---
+# --- Load users with validation ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
-        users = json.load(f)
+        try:
+            users = json.load(f)
+            if not isinstance(users, dict):
+                users = {}
+            else:
+                # Validate each entry
+                for u, data in list(users.items()):
+                    if not isinstance(data, dict) or 'password' not in data:
+                        # Fix if data is a string
+                        if isinstance(data, str):
+                            users[u] = {'password': data}
+                        else:
+                            users[u] = {}
+        except:
+            users = {}
 else:
     users = {}
 
@@ -73,7 +87,7 @@ if not st.session_state['current_user']:
                 save_users()
                 st.success("Registered! Please login.")
         else:
-            if username in users and users[username]['password'] == password:
+            if username in users and isinstance(users[username], dict) and users[username].get('password') == password:
                 st.session_state['current_user'] = username
                 st.success(f"Logged in as {username}")
                 st.experimental_rerun()
