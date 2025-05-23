@@ -4,6 +4,7 @@ import json
 import asyncio
 import requests
 import threading
+import urllib.parse
 
 # --- CONFIG & STYLE ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
@@ -25,6 +26,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Header Image
 st.markdown(
     '<div style="text-align:center;">'
     '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
@@ -32,7 +34,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Load users (for registration/login) ---
+# --- Load users (register/login) ---
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         try:
@@ -40,7 +42,6 @@ if os.path.exists("users.json"):
             if not isinstance(users, dict):
                 users = {}
             else:
-                # Fix possible structure issues
                 for u, data in list(users.items()):
                     if not isinstance(data, dict) or 'password' not in data:
                         if isinstance(data, str):
@@ -56,7 +57,7 @@ def save_users():
     with open("users.json", "w") as f:
         json.dump(users, f)
 
-# --- Load your API key ---
+# --- Load API key ---
 def load_api_key():
     try:
         with open('api_key.txt', 'r') as f:
@@ -72,6 +73,14 @@ if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
 if 'access_token' not in st.session_state:
     st.session_state['access_token'] = None
+
+# --- Helper for rerun ---
+def safe_rerun():
+    if hasattr(st, "experimental_rerun"):
+        st.experimental_rerun()
+    else:
+        # fallback: just stop; user can refresh
+        st.stop()
 
 # --- Registration/Login UI ---
 if not st.session_state['current_user']:
@@ -91,11 +100,15 @@ if not st.session_state['current_user']:
                 users[username] = {'password': password}
                 save_users()
                 st.success("Registration successful! Please login.")
-        else:  # Login
-            if username in users and isinstance(users[username], dict) and users[username].get('password') == password:
+        else:
+            if (
+                username in users 
+                and isinstance(users[username], dict) 
+                and users[username].get('password') == password
+            ):
                 st.session_state['current_user'] = username
                 st.success(f"Logged in as {username}")
-                st.experimental_rerun()
+                safe_rerun()
             else:
                 st.error("Invalid username or password")
     st.stop()
@@ -111,9 +124,9 @@ action = st.radio("Select an action:", [
     "Logout"
 ])
 
-# Placeholder API functions
+# --- Placeholder API functions ---
 def make_api_call(endpoint, params=None):
-    # Implement your real API calls here
+    # Implement your real API call here
     return {"status": "success", "data": "Fake data"}
 
 async def convert_gamertag_to_xuid(gamertag):
@@ -164,7 +177,7 @@ if action == "Convert Gamertag to XUID":
 elif action == "Ban XUID":
     xuid = st.text_input("Enter XUID to ban")
     if st.button("Confirm Ban"):
-        # Insert real ban API call here
+        # Your real ban API call here
         st.success(f"XUID {xuid} has been banned.")
 elif action == "Spam Messages":
     target_gamertag = st.text_input("Target Gamertag")
@@ -184,4 +197,4 @@ elif action == "Report Spammer":
 elif action == "Logout":
     st.session_state['current_user'] = None
     st.session_state['access_token'] = None
-    st.experimental_rerun()
+    safe_rerun()
