@@ -33,21 +33,27 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 4. Load users and save functions ---
-if os.path.exists("users.json"):
-    with open("users.json", "r") as f:
-        users = json.load(f)
+# --- 4. Load or initialize users data ---
+users_path = "users.json"
+if os.path.exists(users_path):
+    try:
+        with open(users_path, "r") as f:
+            users = json.load(f)
+        if not isinstance(users, dict):
+            users = {}
+    except:
+        users = {}
 else:
     users = {}
 
 def save_users():
-    with open("users.json", "w") as f:
+    with open(users_path, "w") as f:
         json.dump(users, f)
 
-# --- 5. Validate API key ---
-# Use your fixed API key
+# --- 5. Fixed API key ---
 API_KEY = "8bdd-8041d82bb8e4"
 
+# --- 6. Validate API key ---
 def validate_api_key(api_key):
     url = "https://xbl.io/api/v5/account/ownership"
     headers = {'X-Auth': api_key}
@@ -57,11 +63,11 @@ def validate_api_key(api_key):
     except:
         return False
 
-# --- 6. Manage login state ---
+# --- 7. Manage login state ---
 if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
 
-# --- 7. If not logged in, show login/register ---
+# --- 8. Login/Register ---
 if not st.session_state['current_user']:
     st.markdown("### Welcome! Please Register or Login")
     mode = st.radio("Mode", ["Login", "Register"])
@@ -69,13 +75,15 @@ if not st.session_state['current_user']:
     password = st.text_input("Password", type="password")
     if st.button("Submit"):
         if mode == "Register":
-            if username in users:
+            if not username or not password:
+                st.error("Please enter username and password.")
+            elif username in users:
                 st.error("Username already exists.")
             else:
                 users[username] = {'password': password}
                 save_users()
-                st.success("Registered! Please login.")
-        else:
+                st.success("Registration successful! Please login.")
+        else:  # Login
             if username in users and users[username]['password'] == password:
                 st.session_state['current_user'] = username
                 st.success(f"Logged in as {username}")
@@ -84,7 +92,7 @@ if not st.session_state['current_user']:
                 st.error("Invalid username or password")
     st.stop()
 
-# --- 8. Logged in, show main app ---
+# --- 9. Main app ---
 st.title(f"Welcome {st.session_state['current_user']}!")
 
 action = st.radio("Choose an action:", [
@@ -96,16 +104,8 @@ action = st.radio("Choose an action:", [
 ])
 
 def make_api_call(endpoint, params=None):
-    headers = {'X-Auth': API_KEY}
-    url_map = {
-        "convert_gamertag": "https://xbl.io/api/v5/xuid/convert",
-        "ban_xuid": "https://xbl.io/api/v5/xuid/ban",
-        "spam_messages": "https://xbl.io/api/v5/messages/spam",
-        "report_spammer": "https://xbl.io/api/v5/report"
-    }
-    url = url_map.get(endpoint)
-    # Here, you should implement real API call logic.
-    # For now, just simulate success.
+    # Placeholder for real API request
+    # Replace with actual requests when implementing
     return {"status": "success", "data": "Fake data"}
 
 def convert_gamertag():
@@ -142,7 +142,7 @@ def logout():
     st.session_state['current_user'] = None
     st.experimental_rerun()
 
-# Run selected action
+# Run actions
 if action == "Convert Gamertag to XUID":
     convert_gamertag()
 elif action == "Ban XUID":
