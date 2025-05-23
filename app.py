@@ -4,8 +4,8 @@ import json
 import threading
 import requests
 import asyncio
+import aiohttp
 import urllib.parse
-import aiohttp  # <-- Make sure this is included
 
 # --- CONFIG & STYLE ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
@@ -16,7 +16,10 @@ st.markdown(
     .stApp {
         margin-top:0; padding-top:0;
         background-image: url("https://4kwallpapers.com/images/wallpapers/neon-xbox-logo-2880x1800-13434.png");
-        background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 100vh;
+        background-size: cover; 
+        background-position: center; 
+        background-repeat: no-repeat; 
+        min-height: 100vh;
     }
     header { display:none !important; }
     #MainMenu { visibility:hidden; }
@@ -29,26 +32,35 @@ st.markdown(
 
 # Header Image
 st.markdown(
-    '<div style="text-align:center;">'
-    '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
-    '</div>',
+    '''
+    <div style="text-align:center;">
+        <img src="https://i.imgur.com/uAQOm2Y.png" 
+             style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+    </div>
+    ''',
     unsafe_allow_html=True
 )
 
 # --- Load API key ---
 def load_api_key():
-    with open('api_key.txt', 'r') as f:
-        return f.read().strip()
+    try:
+        with open('api_key.txt', 'r') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        st.error("API key file 'api_key.txt' not found!")
+        return None
 
 API_KEY = load_api_key()
+if not API_KEY:
+    st.stop()  # Stop if no API key is loaded
 
 # --- Load users ---
 if os.path.exists("users.json"):
-    with open("users.json", "r") as f:
-        try:
+    try:
+        with open("users.json", "r") as f:
             users = json.load(f)
-        except:
-            users = {}
+    except json.JSONDecodeError:
+        users = {}
 else:
     users = {}
 
@@ -61,6 +73,8 @@ if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
 if 'access_token' not in st.session_state:
     st.session_state['access_token'] = None
+if 'is_running' not in st.session_state:
+    st.session_state['is_running'] = False
 
 def safe_rerun():
     if hasattr(st, "experimental_rerun"):
@@ -136,12 +150,22 @@ async def send_message(xuid, message, session):
     }
     payload = {"message": message, "xuid": xuid}
     resp = await session.post(url, json=payload, headers=headers)
-    resp_json = await resp.json()
+    # Check response status before parsing JSON
     if resp.status == 200:
-        return True
-    elif "limitType" in resp_json:
+        try:
+            await resp.json()
+            return True
+        except:
+            return False
+    elif resp.status == 429:
+        # Rate limit hit
         return "rate_limit"
     else:
+        # For other errors, try to get error message
+        try:
+            await resp.json()
+        except:
+            pass
         return False
 
 async def spam_messages(gamertag, message, amount):
@@ -158,6 +182,15 @@ async def spam_messages(gamertag, message, amount):
             print(f"Sent message {i+1}")
             await asyncio.sleep(1)
     return "done"
+
+# --- UI: prevent multiple runs ---
+def run_spam():
+    # Set flag to prevent multiple
+    st.session_state['is_running'] = True
+    with st.spinner("Sending messages..."):
+        result = asyncio.run(spam_messages(target_gamertag, message, count))
+    st.session_state['is_running'] = False
+    return result
 
 # --- Action handlers ---
 if action == "Convert Gamertag to XUID":
@@ -178,8 +211,14 @@ elif action == "Spam Messages":
     target_gamertag = st.text_input("Target Gamertag")
     message = st.text_area("Message")
     count = st.number_input("Number of messages", min_value=1)
-    if st.button("Start Spam"):
-        result = asyncio.run(spam_messages(target_gamertag, message, count))
+    start_button = st.button(
+        "Start Spam",
+        disabled=st.session_state['is_running']
+    )
+    if start_button:
+        # Run spam asynchronously
+        result = run_spam()
+        # Show result
         if result == "gamertag_not_found":
             st.error("Gamertag not found.")
         elif result == "rate_limit":
