@@ -6,6 +6,7 @@ import requests
 import asyncio
 import aiohttp
 import urllib.parse
+import itertools
 
 # --- CONFIG & STYLE ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
@@ -82,6 +83,30 @@ def safe_rerun():
     else:
         st.stop()
 
+# --- Define your multiple API keys ---
+API_KEYS = [
+    "22257de1-4125-42b8-9614-cfb54e835046",
+    "...8a-15ace6a42c11",
+    "...4c-64590843a82e",
+    "...6a-c4e30bc67f64",
+    "...bc-9997cd0e34dc",
+    "...fc-339c2e94a57a",
+    "...ea-98dab872d4b9",
+    "...17-6f7d012c7443",
+    "...1d-f3022e0b2c02",
+    "...e6-f8bb08ef751b",
+    "...c5-d7c3fdc9de15",
+    "...e7-d4bd1d552c32",
+    "...3a-61ac756d9e03",
+    "...55-b8cfbfaa053c",
+]
+
+# Create a cycle iterator for API keys
+api_key_cycle = itertools.cycle(API_KEYS)
+
+def get_next_api_key():
+    return next(api_key_cycle)
+
 # --- Registration / Login ---
 if not st.session_state['current_user']:
     st.markdown("### Welcome! Please Register or Login")
@@ -124,12 +149,12 @@ action = st.radio("Select an action:", [
     "Logout"
 ])
 
-# --- Async functions for spam ---
+# --- Async functions ---
 async def convert_gamertag_to_xuid(gamertag):
     url = f"https://xbl.io/api/v2/search/{urllib.parse.quote(gamertag)}"
     headers = {
         "accept": "*/*",
-        "x-authorization": API_KEY,
+        "x-authorization": get_next_api_key(),
         "Content-Type": "application/json"
     }
     async with aiohttp.ClientSession() as session:
@@ -145,7 +170,7 @@ async def send_message(xuid, message, session):
     url = "https://xbl.io/api/v2/conversations"
     headers = {
         "accept": "*/*",
-        "x-authorization": API_KEY,
+        "x-authorization": get_next_api_key(),
         "Content-Type": "application/json"
     }
     payload = {"message": message, "xuid": xuid}
@@ -158,10 +183,8 @@ async def send_message(xuid, message, session):
         except:
             return False
     elif resp.status == 429:
-        # Rate limit hit
         return "rate_limit"
     else:
-        # For other errors, try to get error message
         try:
             await resp.json()
         except:
@@ -183,16 +206,15 @@ async def spam_messages(gamertag, message, amount):
             await asyncio.sleep(1)
     return "done"
 
-# --- UI: prevent multiple runs ---
+# --- Run spam asynchronously with UI lock ---
 def run_spam():
-    # Set flag to prevent multiple
     st.session_state['is_running'] = True
     with st.spinner("Sending messages..."):
         result = asyncio.run(spam_messages(target_gamertag, message, count))
     st.session_state['is_running'] = False
     return result
 
-# --- Action handlers ---
+# --- UI: Handling User Actions ---
 if action == "Convert Gamertag to XUID":
     gamertag = st.text_input("Enter Gamertag")
     if st.button("Convert"):
@@ -205,7 +227,7 @@ if action == "Convert Gamertag to XUID":
 elif action == "Ban XUID":
     xuid = st.text_input("Enter XUID to ban")
     if st.button("Confirm Ban"):
-        # Your real ban API call here
+        # Your ban API logic here
         st.success(f"XUID {xuid} has been banned.")
 elif action == "Spam Messages":
     target_gamertag = st.text_input("Target Gamertag")
@@ -216,9 +238,8 @@ elif action == "Spam Messages":
         disabled=st.session_state['is_running']
     )
     if start_button:
-        # Run spam asynchronously
         result = run_spam()
-        # Show result
+        # Show result feedback
         if result == "gamertag_not_found":
             st.error("Gamertag not found.")
         elif result == "rate_limit":
@@ -234,7 +255,7 @@ elif action == "Report Spammer":
     if st.button("Send Reports"):
         def flood():
             headers = {
-                "X-Authorization": API_KEY,
+                "X-Authorization": get_next_api_key(),
                 "Content-Type": "application/json"
             }
             for _ in range(int(count)):
