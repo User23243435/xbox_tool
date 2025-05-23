@@ -5,7 +5,7 @@ import threading
 import requests
 import asyncio
 import urllib.parse
-import aiohttp  # <-- Make sure this is imported
+import aiohttp  # <-- Make sure this is included
 
 # --- CONFIG & STYLE ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
