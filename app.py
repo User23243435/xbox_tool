@@ -56,11 +56,14 @@ def save_keys():
 
 # --- 5. Validation function ---
 def validate_api_key(api_key):
-    url = "https://xbl.io/api/v5/account/ownership"
+    url = "https://xbl.io/api/v5/users/me/profile"
     headers = {'X-Auth': api_key}
     try:
         response = requests.get(url, headers=headers)
-        return response.status_code == 200
+        if response.status_code == 200:
+            return True
+        else:
+            return False
     except:
         return False
 
@@ -74,7 +77,6 @@ if 'api_key_valid' not in st.session_state:
 if st.session_state['current_user']:
     current_user = st.session_state['current_user']
     user_api_key = user_keys.get(current_user, '')
-    # Validate stored key
     if user_api_key:
         if validate_api_key(user_api_key):
             st.session_state['api_key_valid'] = True
@@ -83,14 +85,13 @@ if st.session_state['current_user']:
             st.session_state['current_user'] = None
             st.session_state['api_key_valid'] = False
 
-# --- 8. If no valid API key, prompt for it ---
+# --- 8. If no valid API key, ask for it ---
 if not st.session_state['api_key_valid']:
-    # Show link and input
     st.markdown("### Click here if you don't have an API key:")
     st.markdown("[Get your Xbox API Key](https://xbl.io/console)")
-    new_key = st.text_input("Enter your XboxAPI key here")
+    new_key = st.text_input("Enter your XboxAPI key")
     if st.button("Save API Key") and new_key:
-        # Validate key
+        # Validate the key by calling a known working endpoint
         if validate_api_key(new_key):
             # Save as temporary user
             temp_username = "tempuser"
@@ -103,12 +104,11 @@ if not st.session_state['api_key_valid']:
             st.error("Invalid API Key. Please check and try again.")
     st.stop()
 
-# --- 9. Registration/Login flow for tempuser ---
+# --- 9. Registration or login for tempuser ---
 if st.session_state['current_user']:
     current_user = st.session_state['current_user']
     user_api_key = user_keys.get(current_user, '')
 
-    # If user is "tempuser", show register/login form
     if current_user == 'tempuser' and user_api_key:
         st.title("Register or Login")
         mode = st.radio("Mode", ["Login", "Register"])
@@ -121,7 +121,7 @@ if st.session_state['current_user']:
                 else:
                     users[username] = {'password': password}
                     save_users()
-                    # Save API key to this username
+                    # Save API key to this user
                     user_keys[username] = user_api_key
                     del user_keys['tempuser']
                     save_keys()
@@ -142,7 +142,7 @@ if st.session_state['current_user']:
                     st.error("Invalid username or password")
         st.stop()
 
-    # --- 10. Main app interface ---
+    # --- 10. Main App ---
     if user_api_key:
         action = st.radio("Choose an action:", [
             "Convert Gamertag to XUID",
