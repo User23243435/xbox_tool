@@ -1,17 +1,14 @@
 import streamlit as st
 import os
 import json
-import requests
-import urllib.parse
 
-# CONFIG & STYLE (unchanged)
+# Basic page setup
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
 st.markdown(
     '<link rel="apple-touch-icon" href="https://i.imgur.com/27Wxhe3.png" />',
     unsafe_allow_html=True
 )
-st.markdown(
-    """
+st.markdown("""
     <style>
     body { margin:0; padding:0; }
     .stApp {
@@ -24,19 +21,9 @@ st.markdown(
     footer { visibility:hidden; }
     div[data-testid="stHelpSidebar"] { display:none; }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""")
 
-# Header Image
-st.markdown(
-    '<div style="text-align:center;">'
-    '<img src="https://i.imgur.com/uAQOm2Y.png" style="width:600px; max-width:90%; height:auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-# Load user data and tokens
+# Load user data
 if os.path.exists("users.json"):
     with open("users.json", "r") as f:
         users = json.load(f)
@@ -47,84 +34,59 @@ def save_users():
     with open("users.json", "w") as f:
         json.dump(users, f)
 
-if os.path.exists("user_tokens.json"):
-    with open("user_tokens.json", "r") as f:
-        user_tokens = json.load(f)
+# Load user API keys
+if os.path.exists("user_keys.json"):
+    with open("user_keys.json", "r") as f:
+        user_keys = json.load(f)
 else:
-    user_tokens = {}  # {username: access_token}
+    user_keys = {}  # username: api_key
 
-def save_tokens():
-    with open("user_tokens.json", "w") as f:
-        json.dump(user_tokens, f)
+def save_keys():
+    with open("user_keys.json", "w") as f:
+        json.dump(user_keys, f)
 
-# Helper alert
-def show_alert(text):
-    st.markdown(f'<div style="background-color:#FFA500; padding:10px; border-radius:5px;">{text}</div>', unsafe_allow_html=True)
-
-# ---- Authentication setup ----
-# Replace these with your actual Azure app credentials
-CLIENT_ID = "YOUR_CLIENT_ID"  # <-- Replace with your Azure app's Client ID
-CLIENT_SECRET = "YOUR_CLIENT_SECRET"  # <-- Replace with your Azure app's Client Secret
-REDIRECT_URI = "http://localhost:8501"
-
-def get_oauth_url():
-    params = {
-        'client_id': CLIENT_ID,
-        'response_type': 'code',
-        'redirect_uri': REDIRECT_URI,
-        'scope': 'XboxLive.signin offline_access',
-        'response_mode': 'query'
-    }
-    return f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(params)}"
-
-# Check if user is logged in
+# User Registration/Login
 if 'current_user' not in st.session_state:
     st.session_state['current_user'] = None
 
-# Login process
 if st.session_state['current_user'] is None:
-    st.title("Login with Xbox")
-    oauth_url = get_oauth_url()
-    st.markdown(f"[Click here to login with Microsoft Xbox account]({oauth_url})")
-    code_input = st.text_input("Paste the 'code' parameter from URL after login")
-    if st.button("Authenticate"):
-        if code_input:
-            # Exchange code for token
-            data = {
-                'client_id': CLIENT_ID,
-                'scope': 'XboxLive.signin offline_access',
-                'code': code_input,
-                'redirect_uri': REDIRECT_URI,
-                'grant_type': 'authorization_code',
-                'client_secret': CLIENT_SECRET
-            }
-            resp = requests.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', data=data)
-            if resp.status_code == 200:
-                token = resp.json()['access_token']
-                # Ask user for a username to link this account
-                username = st.text_input("Enter a username to link this account")
-                if st.button("Link Account") and username:
-                    users[username] = token
-                    save_users()
-                    st.session_state['current_user'] = username
-                    st.success(f"Account linked as {username}")
+    st.title("Register or Login")
+    mode = st.radio("Mode", ["Login", "Register"])
+    username_input = st.text_input("Username")
+    password_input = st.text_input("Password", type="password")
+    if st.button("Submit"):
+        if mode == "Register":
+            if username_input in users:
+                st.error("Username exists.")
             else:
-                show_alert("Failed to exchange code for token.")
+                users[username_input] = password_input
+                save_users()
+                st.success("Registered! Please login.")
         else:
-            show_alert("Paste the code from URL.")
+            if username_input in users and users[username_input] == password_input:
+                st.session_state['current_user'] = username_input
+                st.success(f"Logged in as {username_input}")
+            else:
+                st.error("Invalid login.")
     st.stop()
 
-# If logged in, show main menu
+# User is logged in
 current_user = st.session_state['current_user']
-if current_user and current_user in users:
-    token = users[current_user]
-    st.title(f"🎮 Xbox Tool - {current_user}")
-    st.write("You are logged in with your Xbox account.")
-else:
-    st.write("Please login to continue.")
-    st.stop()
 
-# Main actions
+# If logged in, ask for API key
+if current_user:
+    if current_user not in user_keys:
+        st.info("Enter your XboxAPI.com API key to use the service.")
+        api_key_input = st.text_input("Your XboxAPI Key")
+        if st.button("Save API Key") and api_key_input:
+            user_keys[current_user] = api_key_input
+            save_keys()
+            st.success("API key saved.")
+    else:
+        api_key_input = user_keys[current_user]
+        st.write(f"API key loaded for {current_user}")
+
+# Main menu
 action = st.radio("Select an action:", [
     "Convert Gamertag to XUID",
     "Ban XUID",
@@ -133,28 +95,26 @@ action = st.radio("Select an action:", [
     "Logout"
 ])
 
-# Placeholder API call example (replace with real API requests)
+# Example function to call XboxAPI with stored key
 def make_api_call(endpoint, params=None):
-    headers = {'X-Authorization': token}
-    # Example request
-    # response = requests.get(f"https://your.api/{endpoint}", headers=headers, params=params)
+    key = api_key_input
+    headers = {'X-Auth': key}
+    # insert your actual API request here
+    # response = requests.get("https://xboxapi.com/v2/endpoint", headers=headers, params=params)
     # return response.json()
-    return {"result": "success", "data": "Fake data"}
+    return {"status": "success", "data": "Fake data"}
 
-# Actions implementations
+# Example actions
 def convert_gamertag():
     gamertag = st.text_input("Enter Gamertag")
     if st.button("Convert"):
-        # Make actual API call here with token
-        result = make_api_call("convert_gamertag", {'gamertag': gamertag})
-        # Use real response
+        result = make_api_call("convert_gamertag")  # replace with real API call
         st.success(f"Simulated XUID for {gamertag}: 1234567890")
 
 def ban_xuid():
     xuid = st.text_input("Enter XUID to ban")
     if st.button("Confirm Ban"):
-        # API call to ban XUID
-        make_api_call("ban", {'xuid': xuid})
+        make_api_call("ban_xuid")
         st.success(f"XUID {xuid} banned.")
 
 def spam_messages():
@@ -179,7 +139,7 @@ def logout():
     st.session_state['current_user'] = None
     st.experimental_rerun()
 
-# Dispatch actions
+# Run selected action
 if action == "Convert Gamertag to XUID":
     convert_gamertag()
 elif action == "Ban XUID":
