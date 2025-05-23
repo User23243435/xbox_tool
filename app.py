@@ -5,7 +5,7 @@ import threading
 import requests
 import asyncio
 import urllib.parse
-import aiohttp  # <-- Added here
+import aiohttp  # <-- Make sure this is imported
 
 # --- CONFIG & STYLE ---
 st.set_page_config(page_title="Xbox Tool", page_icon="🎮")
@@ -110,7 +110,7 @@ action = st.radio("Select an action:", [
     "Logout"
 ])
 
-# --- Your async message spammer ---
+# --- Async functions for spam ---
 async def convert_gamertag_to_xuid(gamertag):
     url = f"https://xbl.io/api/v2/search/{urllib.parse.quote(gamertag)}"
     headers = {
@@ -155,7 +155,6 @@ async def spam_messages(gamertag, message, amount):
                 return "rate_limit"
             elif result is False:
                 return "failed"
-            # Optional: print in console
             print(f"Sent message {i+1}")
             await asyncio.sleep(1)
     return "done"
