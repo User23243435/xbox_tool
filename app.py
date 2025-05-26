@@ -7,18 +7,90 @@ import re
 import time
 import threading
 import urllib.parse
+import warnings
+import queue
 
-# ----------- Safe rerun -----------
-def safe_rerun():
+# =========================
+# Initialize session state early
+# =========================
+if 'api_key_index' not in st.session_state:
+    st.session_state['api_key_index'] = 0
+
+# =========================
+# Define your API keys
+# =========================
+API_KEYS = [
+    "0cd3c892-64d1-4275-b39d-6509f39fa557",
+    "32f6a5b5-ca4c-41d0-8e60-4c7ba0a1ea69",
+    "45598255-0242-4b37-9baa-905f5199a21e",
+    "2898954c-5e19-46db-bec3-6b481f267fa8",
+    "d45c42ea-113b-44b2-b9ff-33404c4f8b10",
+    "8dd211c2-d984-451d-bbd1-920f8d01ba5f",
+    "778e5372-5018-44ea-9448-567dd4505e57",
+    "15d89583-5fe9-45dd-8dd3-e90f6332bdcf",
+    "a95d22bb-6bf5-4bc4-ab39-8526f9c1b7e0"
+]
+
+# =========================
+# Function to get next API key
+# =========================
+def get_next_api_key():
+    index = st.session_state['api_key_index']
+    key = API_KEYS[index]
+    st.session_state['api_key_index'] = (index + 1) % len(API_KEYS)
+    return key
+
+# =========================
+# Async functions
+# =========================
+async def convert_gamertag_to_xuid(gamertag):
+    API_KEY = get_next_api_key()
+    gamertag_str = str(gamertag)
+    headers = {
+        "accept": "*/*",
+        "x-authorization": API_KEY,
+        "Content-Type": "application/json"
+    }
+    url = f"https://xbl.io/api/v2/search/{urllib.parse.quote(gamertag_str)}"
     try:
-        st.experimental_rerun()
-    except:
-        try:
-            st.rerun()
-        except:
-            pass
+        async with aiohttp.ClientSession() as session:
+            resp = await session.get(url, headers=headers)
+            data = await resp.json()
+            if "people" in data and data["people"]:
+                xuid_dec = int(data["people"][0]["xuid"])
+                xuid_hex = format(xuid_dec, '016X')
+                return xuid_hex
+    except Exception as e:
+        print("Error in convert_gamertag_to_xuid:", e)
+    return None
 
-# ----------- Load users -----------
+async def send_message(xuid, message):
+    headers = {
+        "accept": "*/*",
+        "x-authorization": get_next_api_key(),
+        "Content-Type": "application/json"
+    }
+    async with aiohttp.ClientSession() as session:
+        resp = await session.post(
+            "https://xbl.io/api/v2/conversations",
+            json={"message": message, "xuid": xuid},
+            headers=headers
+        )
+        return await resp.json()
+
+# =========================
+# Initialize session variables
+# =========================
+if 'current_view' not in st.session_state:
+    st.session_state['current_view'] = 'login'
+if 'profile' not in st.session_state:
+    st.session_state['profile'] = None
+if 'last_spam_time' not in st.session_state:
+    st.session_state['last_spam_time'] = 0
+
+# =========================
+# Load or initialize users data
+# =========================
 users_file = "users.json"
 if not os.path.exists(users_file):
     users = {
@@ -47,7 +119,12 @@ else:
         with open(users_file, "w") as f:
             json.dump(users, f)
 
-# ----------- Style & Banner -----------
+# =========================
+# Streamlit UI
+# =========================
+import warnings
+warnings.filterwarnings("ignore", message="missing ScriptRunContext!")
+
 st.set_page_config(page_title="Xbox Tools", page_icon="🎮")
 st.markdown(
     """
@@ -117,75 +194,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# -------- Your API Keys --------
-API_KEYS = [
-    "0cd3c892-64d1-4275-b39d-6509f39fa557",
-    "32f6a5b5-ca4c-41d0-8e60-4c7ba0a1ea69",
-    "45598255-0242-4b37-9baa-905f5199a21e",
-    "2898954c-5e19-46db-bec3-6b481f267fa8",
-    "d45c42ea-113b-44b2-b9ff-33404c4f8b10",
-    "8dd211c2-d984-451d-bbd1-920f8d01ba5f",
-    "778e5372-5018-44ea-9448-567dd4505e57",
-    "15d89583-5fe9-45dd-8dd3-e90f6332bdcf",
-    "a95d22bb-6bf5-4bc4-ab39-8526f9c1b7e0"
-]
-
-# ----------- API key cycling state (initialize at top) -----------
-if 'api_key_index' not in st.session_state:
-    st.session_state['api_key_index'] = 0
-
-def get_next_api_key():
-    index = st.session_state['api_key_index']
-    api_key = API_KEYS[index]
-    st.session_state['api_key_index'] = (index + 1) % len(API_KEYS)
-    return api_key
-
-# ----------- Async functions -----------
-async def convert_gamertag_to_xuid(gamertag):
-    API_KEY = get_next_api_key()
-    gamertag_str = str(gamertag)
-    headers = {
-        "accept": "*/*",
-        "x-authorization": API_KEY,
-        "Content-Type": "application/json"
-    }
-    url = f"https://xbl.io/api/v2/search/{urllib.parse.quote(gamertag_str)}"
-    try:
-        async with aiohttp.ClientSession() as session:
-            resp = await session.get(url, headers=headers)
-            data = await resp.json()
-            print("API response:", data)
-            if "people" in data and data["people"]:
-                xuid_dec = int(data["people"][0]["xuid"])
-                xuid_hex = format(xuid_dec, '016X')
-                return xuid_hex
-    except Exception as e:
-        print("Error in convert_gamertag_to_xuid:", e)
-    return None
-
-async def send_message(xuid, message):
-    headers = {
-        "accept": "*/*",
-        "x-authorization": get_next_api_key(),
-        "Content-Type": "application/json"
-    }
-    async with aiohttp.ClientSession() as session:
-        resp = await session.post(
-            "https://xbl.io/api/v2/conversations",
-            json={"message": message, "xuid": xuid},
-            headers=headers
-        )
-        return await resp.json()
-
-# ----------- Session State -----------
-if 'current_view' not in st.session_state:
-    st.session_state['current_view'] = 'login'
-if 'profile' not in st.session_state:
-    st.session_state['profile'] = None
-if 'last_spam_time' not in st.session_state:
-    st.session_state['last_spam_time'] = 0
-
-# ----------- Login/Register UI -----------
+# =========================
+# Login/Register UI
+# =========================
 if st.session_state['current_view'] == 'login':
     with st.container():
         st.title("🎮 Welcome to Xbox Tools")
@@ -214,6 +225,10 @@ if st.session_state['current_view'] == 'login':
                         else:
                             st.error("Gamertag not found.")
             if st.button("Register"):
+                # Load users if not loaded
+                if 'users' not in globals():
+                    with open(users_file, "r") as f:
+                        users = json.load(f)
                 if not username:
                     st.error("Enter username")
                 elif not password:
@@ -231,8 +246,11 @@ if st.session_state['current_view'] == 'login':
                     with open(users_file, "w") as f:
                         json.dump(users, f)
                     st.success("Registered! Please login.")
-                    safe_rerun()
+                    st.experimental_rerun()
         elif st.button("Login"):
+            if 'users' not in globals():
+                with open(users_file, "r") as f:
+                    users = json.load(f)
             if not username:
                 st.error("Enter username")
             elif not password:
@@ -241,11 +259,13 @@ if st.session_state['current_view'] == 'login':
                 st.session_state['current_user'] = username
                 st.session_state['profile'] = users[username]
                 st.session_state['current_view'] = 'main'
-                safe_rerun()
+                st.experimental_rerun()
             else:
                 st.error("Invalid credentials")
 
-# ----------- Main dashboard -----------
+# =========================
+# Main dashboard
+# =========================
 elif st.session_state['current_view'] == 'main':
     user = st.session_state['profile']
     username = st.session_state['current_user']
@@ -253,12 +273,9 @@ elif st.session_state['current_view'] == 'main':
     if username == "SlumpdOWN":
         st.markdown("### 👑 Admin Dashboard")
         st.write("Profile URL: https://www.xbox.com/en-US/play/user/see%20slumpd")
-        # get xuid
         xuid_str = user.get('xuid')
         if not xuid_str:
-            # fallback to convert gamertag
             xuid_str = asyncio.run(convert_gamertag_to_xuid(user.get('gamertag')))
-        # Convert decimal string to int then to hex
         try:
             xuid_dec = int(xuid_str)
             xuid_hex = format(xuid_dec, '016X')
@@ -280,7 +297,7 @@ elif st.session_state['current_view'] == 'main':
             with open(users_file, "w") as f:
                 json.dump(users, f)
             st.success("Unlinked.")
-            safe_rerun()
+            st.experimental_rerun()
         st.markdown(f"**XUID:** {linked_xuid or 'N/A'}")
     else:
         st.markdown('<div class="small-text">**Link a new Gamertag:**</div>', unsafe_allow_html=True)
@@ -305,11 +322,11 @@ elif st.session_state['current_view'] == 'main':
                         with open(users_file, "w") as f:
                             json.dump(users, f)
                         st.success("Linked!")
-                        safe_rerun()
+                        st.experimental_rerun()
                 else:
                     st.error("Gamertag not found.")
 
-    # --------- Tools sidebar ---------
+    # Tools sidebar
     st.sidebar.title("Tools")
     tool = st.sidebar.selectbox("Select Tool", ["Convert Gamertag to XUID", "Spam Message", "Flood Reports", "Ban XUID"])
 
@@ -336,37 +353,49 @@ elif st.session_state['current_view'] == 'main':
                 st.warning(f"Wait {remaining}s before spamming again.")
             else:
                 st.session_state['last_spam_time'] = now
-                logs = []
+
+                # Thread-safe queue for logs
+                log_queue = queue.Queue()
 
                 def spam():
                     try:
                         xuid = asyncio.run(convert_gamertag_to_xuid(target_gt))
                     except Exception as e:
-                        logs.append(f"Error converting gamertag: {e}")
+                        log_queue.put(f"Error converting gamertag: {e}")
                         return
                     if not xuid:
-                        logs.append("Failed to get XUID.")
+                        log_queue.put("Failed to get XUID.")
                         return
                     for i in range(int(amount)):
                         try:
                             result = asyncio.run(send_message(xuid, message))
                             if "limitType" in result:
-                                logs.append(f"[ERROR] Rate Limited at message {i+1}")
+                                log_queue.put(f"[ERROR] Rate Limited at message {i+1}")
                                 break
                             else:
-                                logs.append(f"[SUCCESS] Sent message {i+1}")
+                                log_queue.put(f"[SUCCESS] Sent message {i+1}")
                         except Exception as e:
-                            logs.append(f"Error at message {i+1}: {e}")
+                            log_queue.put(f"Error at message {i+1}: {e}")
                         time.sleep(0.5)
 
                 threading.Thread(target=spam).start()
 
-                # Update logs live
+                # Poll logs
                 log_placeholder = st.empty()
                 while threading.active_count() > 1:
-                    log_placeholder.write("\n".join(logs))
+                    logs = []
+                    while not log_queue.empty():
+                        logs.append(log_queue.get())
+                    if logs:
+                        log_placeholder.write("\n".join(logs))
                     time.sleep(0.5)
-                log_placeholder.write("\n".join(logs))
+
+                # Final logs
+                logs = []
+                while not log_queue.empty():
+                    logs.append(log_queue.get())
+                if logs:
+                    log_placeholder.write("\n".join(logs))
 
     elif tool == "Flood Reports":
         st.title("Flood Reports")
@@ -392,9 +421,8 @@ elif st.session_state['current_view'] == 'main':
             banned.add(ban_xuid)
             with open("banned_xuids.json", "w") as f:
                 json.dump(list(banned), f)
-            st.success("XUID banned.")
 
-    # --------- Logout ---------
+    # Logout button
     if st.button("Logout"):
         st.session_state.clear()
-        safe_rerun()
+        st.experimental_rerun()
